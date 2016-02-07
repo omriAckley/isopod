@@ -13,12 +13,6 @@ Potato.prototype.grow = function (factor) {
 	return this;
 };
 
-server.post('/raw-potato', function (req, res, next) {
-	const p = new Potato();
-	console.log('server side potato instance', p);
-	res.json(p);
-});
-
 server.post('/potato', function (req, res, next) {
 	const p = new Potato();
 	console.log('server side potato instance', p);
