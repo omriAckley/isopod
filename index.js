@@ -2,8 +2,7 @@
 
   'use strict';
 
-  const global = global || window;
-  const exports = exports || (global.isopod = {});
+  const exports = (module && module.exports) || (window.isopod = {});
 
   // utilities
 
@@ -36,7 +35,7 @@
     Symbol,
     Array,
     Map
-    ]);
+  ]);
 
   const nativePrototypes = new Set([
     Object.prototype,
@@ -103,7 +102,7 @@
       return thing;
     }
     assoc(root);
-    return JSON.stringify(result);
+    return result;
   }
 
   // deserialization
@@ -147,8 +146,7 @@
     });
   }
 
-  exports.deserialize = function (str) {
-    const rawRoot = JSON.parse(str);
+  exports.deserialize = function (rawRoot) {
     const mapping = new Map();
     const refs = rawRoot.map(function (raw) {
       const typedObj = typedFromRaw(raw);
