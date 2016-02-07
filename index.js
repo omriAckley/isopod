@@ -2,7 +2,8 @@
 
   'use strict';
 
-  const exports = (module && module.exports) || (window.isopod = {});
+  const glob = (typeof global === 'object') ? global : window;
+  const exports = (typeof module === 'object' && typeof module.exports === 'object') ? module.exports : (glob.isopod = {});
 
   // utilities
 
@@ -133,7 +134,9 @@
         obj.add(possibleRef(elem));
       });
     } else if (raw.type === 'Map') {
-      raw.source.forEach(function ([k, v]) {
+      raw.source.forEach(function (mapEntry) {
+        let k = mapEntry[0]; // TODO: could replace with destructuring
+        let v = mapEntry[1]; // TODO: could replace with destructuring
         obj.set(possibleRef(k), possibleRef(v));
       });
     } else if (raw.type === 'Array') {
@@ -153,10 +156,12 @@
       mapping.set(typedObj, raw);
       return typedObj;
     });
-    for (let [actual, raw] of mapping) {
+    for (let mapEntry of mapping) {
+      let actual = mapEntry[0]; // TODO: could replace with destructuring
+      let raw = mapEntry[1]; // TODO: could replace with destructuring
       hydrateOne(actual, raw, refs);
     }
     return refs[0];
   }
 
-})()
+})();
