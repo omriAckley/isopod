@@ -5,7 +5,7 @@ const server = express();
 server.use(express.static(__dirname));
 
 function Potato () {
-	this.weight = 1;
+	this.weight = 100;
 }
 
 Potato.prototype.grow = function (factor) {
