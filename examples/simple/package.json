@@ -4,8 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node --harmony_destructuring server.js"
   },
   "author": "Omri Bernstein",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.13.4",
+    "isopod": "0.0.0"
+  }
 }
