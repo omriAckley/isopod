@@ -12,4 +12,4 @@ npm install
 node server.js
 ```
 
-Now you should be able to visit http://localhost:3000 and see this example in action.
+Now in a web browser you should be able to visit http://localhost:3000 and see this example in action.
