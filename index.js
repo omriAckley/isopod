@@ -38,6 +38,10 @@
     Map
   ]);
 
+  function hasNonNativeConstructor (obj) {
+    return Object.prototype.hasOwnProperty.call(obj, 'constructor') && !nativeConstructors.has(obj.constructor);
+  }
+
   const nativePrototypes = new Set([
     Object.prototype,
     Function.prototype,
@@ -94,7 +98,7 @@
           enumerable: true
         });
       }
-      if (Object.prototype.hasOwnProperty.call(original, 'constructor') && !nativeConstructors.has(original.constructor)) {
+      if (hasNonNativeConstructor(obj)) {
         clone.constructor = dehydrate(original.constructor);
       }
       each(original, function (k, v) {
