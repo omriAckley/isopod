@@ -48,120 +48,136 @@
   ]);
 
   exports.serialize = function (root) {
-    const result = [];
+
+    if (!(root instanceof Object) && typeof root !== 'symbol') return root;
+
+    const serialized = [];
     const map = new Map();
-    function setValues (entry, obj) {
-      const type = entry.type = objectType(obj);
+
+    function assoc (original) {
+      const dehydrated = {};
+      const id = serialized.push(dehydrated)-1;
+      map.set(original, id);
+      return dehydrated;
+    }
+
+    function sourceValueFrom (original, type) {
+      if (type === 'Object') return;
       if (type === 'Symbol') {
-        entry.source = getSymbolString(obj);
+        return getSymbolString(original);
       } else if (type === 'Function') {
-        entry.source = Function.prototype.toString.call(obj);
-      } else if (type === 'Set') {
-        entry.source = [];
-        for (let elem of obj) {
-          entry.source.push(assoc(elem));
+        return Function.prototype.toString.call(original);
+      }
+      const source = [];
+      if (type === 'Set') {
+        for (let elem of original) {
+          source.push(dehydrate(elem));
         }
       } else if (type === 'Map') {
-        entry.source = [];
-        for (let kv of obj) {
-          entry.source.push(kv.map(assoc));
+        for (let kv of original) {
+          source.push(kv.map(dehydrate));
         }
       } else if (type === 'Array') {
-        entry.source = [];
-        Array.prototype.forEach.call(obj, function (elem, idx) {
-          entry.source[idx] = assoc(elem);
+        Array.prototype.forEach.call(original, function (elem, idx) {
+          source[idx] = dehydrate(elem);
         });
       }
-      entry.keys = {};
-      const proto = Object.getPrototypeOf(obj);
+      return source;
+    }
+
+    function cloneKeys (original, source) {
+      const clone = {};
+      const proto = Object.getPrototypeOf(original);
       if (!nativePrototypes.has(proto)) {
-        Object.defineProperty(entry.keys, '__proto__', {
-          value: assoc(proto),
+        Object.defineProperty(clone, '__proto__', {
+          value: dehydrate(proto),
           enumerable: true
         });
       }
-      if (Object.prototype.hasOwnProperty.call(obj, 'constructor') && !nativeConstructors.has(obj.constructor)) {
-        entry.keys.constructor = assoc(obj.constructor);
+      if (Object.prototype.hasOwnProperty.call(original, 'constructor') && !nativeConstructors.has(original.constructor)) {
+        clone.constructor = dehydrate(original.constructor);
       }
-      each(obj, function (k, v) {
-        if (!entry.source || !entry.source.hasOwnProperty(k)) {
-          entry.keys[k] = assoc(v);
+      each(original, function (k, v) {
+        if (!source || !source.hasOwnProperty(k)) {
+          clone[k] = dehydrate(v);
         }
       });
+      return clone;
     }
-    function assoc (thing) {
-      if (map.has(thing)) {
-        return [map.get(thing)];
+
+    function dehydrate (thing) {
+      if (!(thing instanceof Object) && typeof thing !== 'symbol') return thing;
+      if (!map.has(thing)) {
+        const dehydrated = assoc(thing);
+        dehydrated.type = objectType(thing);
+        dehydrated.source = sourceValueFrom(thing, dehydrated.type);
+        dehydrated.keys = cloneKeys(thing, dehydrated.source);
       }
-      if (thing instanceof Object || typeof thing === 'symbol') {
-        const entry = {};
-        const id = result.push(entry)-1;
-        map.set(thing, id);
-        setValues(entry, thing);
-        return [id];
-      }
-      return thing;
+      return [map.get(thing)]
     }
-    assoc(root);
-    return result;
-  }
+
+    dehydrate(root);
+    
+    return serialized;
+
+  };
 
   // deserialization
 
-  function typedFromRaw (raw) {
-    if (raw.type === 'Symbol') {
-      return Symbol(raw.source);
-    } else if (raw.type === 'Function') {
+  function typedFromDehydrated (dehydrated) {
+    if (dehydrated.type === 'Symbol') {
+      return Symbol(dehydrated.source);
+    } else if (dehydrated.type === 'Function') {
       // TODO: alternative to eval
-      return eval(`(${raw.source})`);
-    } else if (raw.type === 'Set') {
+      return eval(`(${dehydrated.source})`);
+    } else if (dehydrated.type === 'Set') {
       return new Set();
-    } else if (raw.type === 'Map') {
+    } else if (dehydrated.type === 'Map') {
       return new Map();
-    } else if (raw.type === 'Array') {
+    } else if (dehydrated.type === 'Array') {
       return [];
-    } else if (raw.type === 'Object') {
+    } else if (dehydrated.type === 'Object') {
       return {};
     }
   }
 
-  function hydrateOne (obj, raw, refs) {
+  function hydrateOne (hydrated, dehydrated, refs) {
     function possibleRef (v) {
       return Array.isArray(v) ? refs[v[0]] : v;
     }
-    if (raw.type === 'Set') {
-      raw.source.forEach(function (elem) {
-        obj.add(possibleRef(elem));
+    if (dehydrated.type === 'Set') {
+      dehydrated.source.forEach(function (elem) {
+        hydrated.add(possibleRef(elem));
       });
-    } else if (raw.type === 'Map') {
-      raw.source.forEach(function (mapEntry) {
-        let k = mapEntry[0]; // TODO: could replace with destructuring
-        let v = mapEntry[1]; // TODO: could replace with destructuring
-        obj.set(possibleRef(k), possibleRef(v));
+    } else if (dehydrated.type === 'Map') {
+      dehydrated.source.forEach(function (mapEntry) {
+        const k = mapEntry[0]; // TODO: could replace with destructuring
+        const v = mapEntry[1]; // TODO: could replace with destructuring
+        hydrated.set(possibleRef(k), possibleRef(v));
       });
-    } else if (raw.type === 'Array') {
-      raw.source.forEach(function (elem) {
-        obj.push(possibleRef(elem));
+    } else if (dehydrated.type === 'Array') {
+      dehydrated.source.forEach(function (elem) {
+        hydrated.push(possibleRef(elem));
       });
     }
-    each(raw.keys, function (k, v) {
-      obj[k] = possibleRef(v);
+    each(dehydrated.keys, function (k, v) {
+      hydrated[k] = possibleRef(v);
     });
   }
 
-  exports.deserialize = function (rawRoot) {
+  exports.deserialize = function (serialized) {
     const mapping = new Map();
-    const refs = rawRoot.map(function (raw) {
-      const typedObj = typedFromRaw(raw);
-      mapping.set(typedObj, raw);
+    const refs = serialized.map(function (dehydrated) {
+      const typedObj = typedFromDehydrated(dehydrated);
+      mapping.set(typedObj, dehydrated);
       return typedObj;
     });
     for (let mapEntry of mapping) {
-      let actual = mapEntry[0]; // TODO: could replace with destructuring
-      let raw = mapEntry[1]; // TODO: could replace with destructuring
-      hydrateOne(actual, raw, refs);
+      const typedObj = mapEntry[0]; // TODO: could replace with destructuring
+      const dehydrated = mapEntry[1]; // TODO: could replace with destructuring
+      hydrateOne(typedObj, dehydrated, refs);
     }
     return refs[0];
-  }
+  };
 
 })();
