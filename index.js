@@ -15,6 +15,11 @@
     });
   }
 
+  function flags (r) {
+    if (r.flags) return r.flags;
+    return (r.ignoreCase ? 'i' : '') + (r.multiline ? 'm' : '') + (r.global ? 'g' : '') + (r.sticky ? 'y' : '');
+  }
+
   // -------------------
   // -- SERIALIZATION --
   // -------------------
@@ -25,6 +30,7 @@
     if (obj instanceof Set) return 'Set';
     if (obj instanceof Map) return 'Map';
     if (Array.isArray(obj)) return 'Array';
+    if (obj instanceof RegExp) return 'RegExp';
     return 'Object';
   }
 
@@ -39,21 +45,17 @@
     Set,
     Symbol,
     Array,
-    Map
+    Map,
+    RegExp
   ]);
+  const nativePrototypes = new Set();
+  nativeConstructors.forEach(function (constructor) {
+    nativePrototypes.add(constructor.prototype);
+  });
 
   function hasNonNativeConstructor (obj) {
     return Object.prototype.hasOwnProperty.call(obj, 'constructor') && !nativeConstructors.has(obj.constructor);
   }
-
-  const nativePrototypes = new Set([
-    Object.prototype,
-    Function.prototype,
-    Set.prototype,
-    Symbol.prototype,
-    Array.prototype,
-    Map.prototype
-  ]);
 
   // given some object or primitive, convert it into a format that will retain all its details when stringified
   exports.serialize = function (root) {
@@ -85,6 +87,8 @@
       } else if (type === 'Function') {
         // a function's source is its source string
         return Function.prototype.toString.call(original);
+      } else if (type === 'RegExp') {
+        return [original.source, flags(original)];
       }
       const source = [];
       if (type === 'Set') {
@@ -172,6 +176,8 @@
       return new Map();
     } else if (dehydrated.type === 'Array') {
       return [];
+    } else if (dehydrated.type === 'RegExp') {
+      return new RegExp(dehydrated.source[0], dehydrated.source[1]);
     } else if (dehydrated.type === 'Object') {
       return {};
     }
