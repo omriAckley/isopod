@@ -4,12 +4,16 @@
   "description": "Universal (isomorphic) Javascript object serialization / deserialization",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/.bin/mocha tests.js"
   },
   "author": "Omri Bernstein",
   "license": "ISC",
   "repository": {
     "type": "git",
     "url": "https://github.com/omriBernstein/isopod"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^2.4.5"
   }
 }
