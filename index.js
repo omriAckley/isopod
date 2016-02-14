@@ -124,7 +124,7 @@
         });
       }
       // include the original's constructor if it has one
-      if (hasNonNativeConstructor(obj)) {
+      if (hasNonNativeConstructor(original)) {
         clone.constructor = dehydrate(original.constructor);
       }
       // include all keys in original not yet accounted for by the source
