@@ -36,20 +36,55 @@ describe('cloning across transport', function () {
   it('works for plain objects', function () {
     const original = {a: 'do', b: 're', c: 'me', d: 1, e: 2, f: 3};
     const remoteClone = simulateTransportCloning(original);
+    expect(remoteClone).to.not.equal(original);
     expect(remoteClone).to.deep.equal(original);
   });
 
   it('works for plain arrays', function () {
     const original = ['do', 're', 'me', 1, 2, 3];
     const remoteClone = simulateTransportCloning(original);
+    expect(remoteClone).to.not.equal(original);
     expect(remoteClone).to.deep.equal(original);
   });
 
-  it('works for plain functions');
-  it('works for plain regular expressions');
-  it('works for plain symbols');
-  it('works for plain sets');
-  it('works for plain maps');
+  it('works for plain functions', function () {
+    const original = function (x, y) {
+      return x + y;
+    };
+    const remoteClone = simulateTransportCloning(original);
+    expect(remoteClone).to.not.equal(original);
+    expect(typeof remoteClone).to.equal('function');
+    expect(remoteClone(1,2)).to.equal(original(1,2));
+  });
+
+  it('works for plain regular expressions', function () {
+    const original = /[abcdef]/igm;
+    const remoteClone = simulateTransportCloning(original);
+    expect(remoteClone).to.not.equal(original);
+    expect(remoteClone).to.deep.equal(original);
+  });
+
+  it('works for plain symbols', function () {
+    const original = Symbol('fluff');
+    const remoteClone = simulateTransportCloning(original);
+    expect(remoteClone).to.not.equal(original);
+    expect(typeof remoteClone).to.equal('symbol');
+    expect(remoteClone.toString()).to.deep.equal(original.toString());
+  });
+
+  it('works for plain sets', function () {
+    const original = new Set(['do', 're', 'me', 1, 2, 3]);
+    const remoteClone = simulateTransportCloning(original);
+    expect(remoteClone).to.not.equal(original);
+    expect(remoteClone).to.deep.equal(original);
+  });
+
+  it('works for plain maps', function () {
+    const original = new Map([[{a: 'do'}, 1], ['re', {b: 2}], [3, 'me']]);
+    const remoteClone = simulateTransportCloning(original);
+    expect(remoteClone).to.not.equal(original);
+    expect(remoteClone).to.deep.equal(original);
+  });
 
   it('works for circular objects');
   it('works for objects containing multiple identical symbols');
