@@ -33,8 +33,18 @@ describe('cloning across transport', function () {
     expect(remoteClone).to.equal(original);
   });
 
-  it('works for plain object');
-  it('works for plain arrays');
+  it('works for plain objects', function () {
+    const original = {a: 'do', b: 're', c: 'me', d: 1, e: 2, f: 3};
+    const remoteClone = simulateTransportCloning(original);
+    expect(remoteClone).to.deep.equal(original);
+  });
+
+  it('works for plain arrays', function () {
+    const original = ['do', 're', 'me', 1, 2, 3];
+    const remoteClone = simulateTransportCloning(original);
+    expect(remoteClone).to.deep.equal(original);
+  });
+
   it('works for plain functions');
   it('works for plain regular expressions');
   it('works for plain symbols');
