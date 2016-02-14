@@ -1,5 +1,7 @@
 (function () {
 
+  // TODO: serialzation/deserialization for: Error, Promise, Date, Generator, Infinity, NaN, undefined, null, Proxy, TypedArray
+
   'use strict';
 
   const glob = (typeof global === 'object') ? global : window;
