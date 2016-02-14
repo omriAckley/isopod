@@ -1,23 +1,38 @@
 'use strict';
 
 const isopod = require('.');
-const chai = require('chai');
+const expect = require('chai').expect;
 
 describe('cloning across transport', function () {
 
   function simulateTransport (thing) {
-    return JSON.parse(JSON.sringify(thing));
+    return JSON.parse(JSON.stringify(thing));
   }
 
   function simulateTransportCloning (thing) {
     const serialized = isopod.serialize(thing);
     const transported = simulateTransport(serialized);
-    return isopod.deseralize(transported);
+    return isopod.deserialize(transported);
   }
 
-  it('works for numbers');
-  it('works for booleans');
-  it('works for strings');
+  it('works for numbers', function () {
+    const original = 5;
+    const remoteClone = simulateTransportCloning(original);
+    expect(remoteClone).to.equal(original);
+  });
+
+  it('works for booleans', function () {
+    const original = true;
+    const remoteClone = simulateTransportCloning(original);
+    expect(remoteClone).to.equal(original);
+  });
+
+  it('works for strings', function () {
+    const original = 'some words and stuff';
+    const remoteClone = simulateTransportCloning(original);
+    expect(remoteClone).to.equal(original);
+  });
+
   it('works for plain object');
   it('works for plain arrays');
   it('works for plain functions');
