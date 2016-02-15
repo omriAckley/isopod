@@ -1,7 +1,13 @@
 'use strict';
 
 const isopod = require('.');
-const expect = require('chai').expect;
+const chai = require('chai');
+const expect = chai.expect;
+const areDeeplyEquivalentOnly = require('./tests-utility');
+chai.Assertion.addMethod('deeplyEquivalent', function (expected) {
+  const equivalent = areDeeplyEquivalentOnly(this._obj, expected);
+  new chai.Assertion(equivalent).to.equal(true);
+});
 
 describe('cloning across transport', function () {
 
@@ -36,15 +42,13 @@ describe('cloning across transport', function () {
   it('works for plain objects', function () {
     const original = {a: 'do', b: 're', c: 'me', d: 1, e: 2, f: 3};
     const remoteClone = simulateTransportCloning(original);
-    expect(remoteClone).to.not.equal(original);
-    expect(remoteClone).to.deep.equal(original);
+    expect(remoteClone).to.be.deeplyEquivalent(original);
   });
 
   it('works for plain arrays', function () {
     const original = ['do', 're', 'me', 1, 2, 3];
     const remoteClone = simulateTransportCloning(original);
-    expect(remoteClone).to.not.equal(original);
-    expect(remoteClone).to.deep.equal(original);
+    expect(remoteClone).to.be.deeplyEquivalent(original);
   });
 
   it('works for plain functions', function () {
@@ -52,42 +56,65 @@ describe('cloning across transport', function () {
       return x + y;
     };
     const remoteClone = simulateTransportCloning(original);
-    expect(remoteClone).to.not.equal(original);
-    expect(typeof remoteClone).to.equal('function');
-    expect(remoteClone(1,2)).to.equal(original(1,2));
+    expect(remoteClone).to.be.deeplyEquivalent(original);
   });
 
   it('works for plain regular expressions', function () {
     const original = /[abcdef]/igm;
     const remoteClone = simulateTransportCloning(original);
-    expect(remoteClone).to.not.equal(original);
-    expect(remoteClone).to.deep.equal(original);
+    expect(remoteClone).to.be.deeplyEquivalent(original);
   });
 
   it('works for plain symbols', function () {
     const original = Symbol('fluff');
     const remoteClone = simulateTransportCloning(original);
-    expect(remoteClone).to.not.equal(original);
-    expect(typeof remoteClone).to.equal('symbol');
-    expect(remoteClone.toString()).to.deep.equal(original.toString());
+    expect(remoteClone).to.be.deeplyEquivalent(original);
   });
 
   it('works for plain sets', function () {
     const original = new Set(['do', 're', 'me', 1, 2, 3]);
     const remoteClone = simulateTransportCloning(original);
-    expect(remoteClone).to.not.equal(original);
-    expect(remoteClone).to.deep.equal(original);
+    expect(remoteClone).to.be.deeplyEquivalent(original);
   });
 
   it('works for plain maps', function () {
     const original = new Map([[{a: 'do'}, 1], ['re', {b: 2}], [3, 'me']]);
     const remoteClone = simulateTransportCloning(original);
-    expect(remoteClone).to.not.equal(original);
-    expect(remoteClone).to.deep.equal(original);
+    expect(remoteClone).to.be.deeplyEquivalent(original);
   });
 
-  it('works for circular objects');
-  it('works for objects containing multiple identical symbols');
+  it('works for arbitrary combinations of the above', function () {
+    const original = {
+      a: [{b: 'do'}, 're', new Map([['beep', [10,20,30]], [[Symbol('foo'), 'baz'], 'boop']])],
+      b: function (x) {return x + 100},
+      c: /^http:\/\/.*/g,
+      d: Symbol('words'),
+      e: 'me',
+      f: new Set([Symbol('things'), ['fa', new Set([{x: 'y'}]), 1], 'so', 2]),
+      g: new Map([[{la: 3}, {te: /[aeio]+/i}], [new Set(['and', 'but', 'of']), 4]])
+    };
+    const remoteClone = simulateTransportCloning(original);
+    expect(remoteClone).to.be.deeplyEquivalent(original);
+  });
+
+  it('works for circular objects', function () {
+    const original = {};
+    original.circle = original;
+    const remoteClone = simulateTransportCloning(original);
+    expect(remoteClone).to.be.deeplyEquivalent(original);
+  });
+
+  it('works for objects containing multiple identical symbols', function () {
+    const sym = Symbol('foo');
+    const original = {
+      a: sym,
+      b: sym,
+      c: [sym, sym]
+    };
+    const remoteClone = simulateTransportCloning(original);
+    expect(remoteClone).to.be.deeplyEquivalent(original);
+  });
+
   it('works for objects containing multiple identical references');
 
   it('works for arrays with extra keys');
