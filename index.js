@@ -211,7 +211,14 @@
     }
     // incorporate any additional keys from the dehydrated object
     each(dehydrated.keys, function (k, v) {
-      hydrated[k] = possibleRef(v);
+      if (k === 'constructor') {
+        Object.defineProperty(hydrated, 'constructor', {
+          value: possibleRef(v),
+          enumerable: false
+        });
+      } else {
+        hydrated[k] = possibleRef(v);
+      }
     });
   }
 
