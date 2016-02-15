@@ -59,11 +59,15 @@
     return Object.prototype.hasOwnProperty.call(obj, 'constructor') && !nativeConstructors.has(obj.constructor);
   }
 
+  function isRef (thing) {
+    return thing instanceof Object || typeof thing === 'symbol'; 
+  }
+
   // given some object or primitive, convert it into a format that will retain all its details when stringified
   exports.serialize = function (root) {
 
     // deal with trivial case
-    if (!(root instanceof Object) && typeof root !== 'symbol') return root;
+    if (!isRef(root)) return root;
 
     // the serialized result will be an array of "dehydrated" objects
     const serialized = [];
@@ -139,7 +143,7 @@
     // convert something into a rehydratable format
     function dehydrate (thing) {
       // non-refs (i.e. something that is neither a symbol nor an object) remain themselves
-      if (!(thing instanceof Object) && typeof thing !== 'symbol') return thing;
+      if (!isRef(thing)) return thing;
       if (!idCache.has(thing)) {
         // incorporate the object into the cache
         const dehydrated = assoc(thing);
