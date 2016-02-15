@@ -29,8 +29,8 @@
   function objectType (obj) {
     if (typeof obj === 'symbol') return 'Symbol';
     if (typeof obj === 'function') return 'Function';
-    if (obj instanceof Set) return 'Set';
-    if (obj instanceof Map) return 'Map';
+    if (obj instanceof Set) return 'Set'; // TODO: does not seem to work for sets with non standard prototypes
+    if (obj instanceof Map) return 'Map'; // TODO: does not seem to work for maps with non standard prototypes
     if (Array.isArray(obj)) return 'Array';
     if (obj instanceof RegExp) return 'RegExp';
     return 'Object';
