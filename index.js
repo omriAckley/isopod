@@ -133,7 +133,7 @@
       }
       // include all keys in original not yet accounted for by the source
       each(original, function (k, v) {
-        if (!source || !source.hasOwnProperty(k)) {
+        if (!source || !source.hasOwnProperty(k)) { // TODO: does not work for functions with numerical properties because their source is a string, fix this
           clone[k] = dehydrate(v);
         }
       });
