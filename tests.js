@@ -166,6 +166,7 @@ describe('cloning across transport', function () {
 
     it('includes arrays', function () {
       const original = [];
+      original.n = null;
       original.s = 'abcd';
       original.f = function () {};
       const remoteClone = simulateTransportCloning(original);
@@ -174,6 +175,7 @@ describe('cloning across transport', function () {
 
     it('includes functions', function () {
       const original = function () {};
+      original.u = undefined;
       original.n = 123;
       original.r = /\d+/igm;
       const remoteClone = simulateTransportCloning(original);
@@ -182,6 +184,7 @@ describe('cloning across transport', function () {
 
     it('includes regular expressions', function () {
       const original = new RegExp();
+      original.i = Infinity;
       original.b = true;
       original.s = new Set();
       const remoteClone = simulateTransportCloning(original);
@@ -190,6 +193,7 @@ describe('cloning across transport', function () {
 
     it('includes sets', function () {
       const original = new Set();
+      original.n = NaN;
       original.s = Symbol('foo');
       original.m = new Map();
       const remoteClone = simulateTransportCloning(original);
