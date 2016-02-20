@@ -34,8 +34,8 @@
     if (isSpecial(obj)) return `${obj}`;
     if (typeof obj === 'symbol') return 'Symbol';
     if (typeof obj === 'function') return 'Function';
-    if (obj instanceof Set) return 'Set'; // TODO: does not seem to work for sets with non standard prototypes
-    if (obj instanceof Map) return 'Map'; // TODO: does not seem to work for maps with non standard prototypes
+    if (Object.prototype.toString.call(obj) === '[object Set]') return 'Set';
+    if (Object.prototype.toString.call(obj) === '[object Map]') return 'Map';
     if (Array.isArray(obj)) return 'Array';
     if (obj instanceof RegExp) return 'RegExp';
     return 'Object';
@@ -105,14 +105,14 @@
       const source = [];
       if (type === 'Set') {
         // a set's source is an array of the set elements
-        for (let elem of original) {
+        Set.prototype.forEach.call(original, function (elem) {
           source.push(dehydrate(elem));
-        }
+        });
       } else if (type === 'Map') {
         // a map's source is an array of key-value pair arrays
-        for (let kv of original) {
-          source.push(kv.map(dehydrate));
-        }
+        Map.prototype.forEach.call(original, function (v, k) {
+          source.push([k,v].map(dehydrate));
+        });
       } else if (type === 'Array') {
         // an array's source is an array copy of its elements
         Array.prototype.forEach.call(original, function (elem, idx) {
