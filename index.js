@@ -1,6 +1,6 @@
 (function () {
 
-  // TODO: serialzation/deserialization for: Error, Promise, Date, Generator, Infinity, NaN, undefined, null, Proxy, TypedArray
+  // TODO: serialzation/deserialization for: Error, Promise, Date, Generator, Proxy, TypedArray
 
   'use strict';
 
@@ -26,7 +26,12 @@
   // -- SERIALIZATION --
   // -------------------
 
+  function isSpecial (thing) {
+    return thing === undefined || thing === null || Number.isNaN(thing) || thing === Infinity;
+  }
+
   function objectType (obj) {
+    if (isSpecial(obj)) return `${obj}`;
     if (typeof obj === 'symbol') return 'Symbol';
     if (typeof obj === 'function') return 'Function';
     if (obj instanceof Set) return 'Set'; // TODO: does not seem to work for sets with non standard prototypes
@@ -59,8 +64,9 @@
     return Object.prototype.hasOwnProperty.call(obj, 'constructor') && !nativeConstructors.has(obj.constructor);
   }
 
+  // TODO: better name
   function isRef (thing) {
-    return thing instanceof Object || typeof thing === 'symbol'; 
+    return thing instanceof Object || typeof thing === 'symbol' || isSpecial(thing); 
   }
 
   // given some object or primitive, convert it into a format that will retain all its details when stringified
@@ -85,8 +91,8 @@
 
     // catch-all to obtain various meaningful "source" values from native Object types
     function sourceValueFrom (original, type) {
-      // objects don't have a "source"
-      if (type === 'Object') return;
+      // objects and special values don't have a "source"
+      if (type === 'Object' || isSpecial(original)) return;
       if (type === 'Symbol') {
         // a symbol's source is the string used to construct it
         return getSymbolString(original);
@@ -118,6 +124,8 @@
 
     // return any keys in the original not accounted for in the source
     function cloneKeys (original, source) {
+      // special values do not have keys
+      if (isSpecial(original)) return;
       const clone = {};
       const proto = Object.getPrototypeOf(original);
       // include original's __proto__ when cloning it, if it's non-native
@@ -142,7 +150,7 @@
 
     // convert something into a rehydratable format
     function dehydrate (thing) {
-      // non-refs (i.e. something that is neither a symbol nor an object) remain themselves
+      // non-refs (i.e. something that is neither a symbol, an object, nor a special value) remain themselves
       if (!isRef(thing)) return thing;
       if (!idCache.has(thing)) {
         // incorporate the object into the cache
@@ -186,11 +194,21 @@
       return new RegExp(dehydrated.source[0], dehydrated.source[1]);
     } else if (dehydrated.type === 'Object') {
       return {};
+    } else if (dehydrated.type === 'null') {
+      return null;
+    } else if (dehydrated.type === 'undefined') {
+      return undefined;
+    } else if (dehydrated.type === 'NaN') {
+      return NaN;
+    } else if (dehydrated.type === 'Infinity') {
+      return Infinity;
     }
   }
 
   // use the dehydrated format to populate an empty object of the correct type
   function hydrateOne (hydrated, dehydrated, refs) {
+    // special values need no further hydration
+    if (isSpecial(hydrated)) return;
     // account for any objects that are duplicate references
     function possibleRef (v) {
       return Array.isArray(v) ? refs[v[0]] : v;

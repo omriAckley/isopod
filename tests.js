@@ -42,13 +42,29 @@ describe('cloning across transport', function () {
       expect(remoteClone).to.equal(original);
     });
 
-    it('includes null');
+    it('includes null', function () {
+      const original = null;
+      const remoteClone = simulateTransportCloning(original);
+      expect(remoteClone).to.equal(original);
+    });
 
-    it('includes undefined');
+    it('includes undefined', function () {
+      const original = undefined;
+      const remoteClone = simulateTransportCloning(original);
+      expect(remoteClone).to.equal(original);
+    });
 
-    it('includes NaN');
+    it('includes NaN', function () {
+      const original = NaN;
+      const remoteClone = simulateTransportCloning(original);
+      expect(Number.isNaN(remoteClone)).to.equal(true);
+    });
 
-    it('includes Infinity');
+    it('includes Infinity', function () {
+      const original = Infinity;
+      const remoteClone = simulateTransportCloning(original);
+      expect(remoteClone).to.equal(original);
+    });
 
   });
 
@@ -106,7 +122,8 @@ describe('cloning across transport', function () {
         d: Symbol('words'),
         e: 'me',
         f: new Set([Symbol('things'), ['fa', new Set([{x: 'y'}]), 1], 'so', 2]),
-        g: new Map([[{la: 3}, {te: /[aeio]+/i}], [new Set(['and', 'but', 'of']), 4]])
+        g: new Map([[{la: 3}, {te: /[aeio]+/i}], [new Set(['and', 'but', 'of']), 4]]),
+        h: [null, Infinity, undefined, NaN]
       };
       const remoteClone = simulateTransportCloning(original);
       expect(remoteClone).to.be.deeplyEquivalent(original);
