@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/github/omriBernstein/isopod/badge.svg?branch=master)](https://coveralls.io/github/omriBernstein/isopod?branch=master)
+
 # About
 
 Have you ever wanted to clone an object (including all its methods and prototyped goodness) from one Javascript runtime to another?
@@ -18,7 +20,7 @@ npm install isopod
 const isopod = require('isopod');
 ```
 
-When using from the browser, download it then in your html include a `<script>` pointing to the correct file. The script will make `isopod` a global variable.
+When using from the browser, download it, then in your html include a `<script>` pointing to the correct file. The script will make `isopod` a global variable.
 
 For example you might run:
 
@@ -26,7 +28,7 @@ For example you might run:
 npm install isopod
 ``` 
 
-...and then, assuming the `node_modules` directory is statically served to the client, have this in your html:
+...and then you might put this in your html (assuming the `node_modules` directory is statically served to the client):
 
 ```html
 <script src="/isopod/index.js"></script>
@@ -42,7 +44,7 @@ npm install isopod
 
 Normally when you send some Javascript data from one program (e.g. your server) to another (e.g. your client) it loses "richness". Functions, regular expressions, circular objects, objects with non-standard prototypes—all of these things *would not* normally transfer over.
 
-One way to think about why this happens is that any data that gets sent somewhere else by your Javascript program will (basically) need to get converted into a string, and is generally parsed back into data on the receiving end. Commonly the sender will `JSON.stringify` the data and the receiver will `JSON.parse` the incoming string.
+One way to think about why this happens is that any data that gets sent somewhere else by your Javascript program will (basically) need to get converted into a string, and is generally converted back into data (parsed) on the receiving end. Commonly the sender will `JSON.stringify` the data and the receiver will `JSON.parse` the incoming string.
 
 This means that Javascript objects get converted into JSON strings, which are only natively equipped to represent plain objects, plain arrays, strings, numbers, booleans, and null.
 

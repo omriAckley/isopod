@@ -4,7 +4,8 @@
   "description": "Universal (isomorphic) Javascript object serialization / deserialization",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha tests.js"
+    "test": "mocha --reporter spec tests.js",
+    "coverage": "istanbul cover --config=istanbul.json _mocha -- --reporter min tests.js && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage"
   },
   "author": "Omri Bernstein",
   "license": "ISC",
@@ -14,6 +15,8 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "coveralls": "^2.11.6",
+    "istanbul": "^0.4.2",
     "mocha": "^2.4.5"
   }
 }
