@@ -142,6 +142,7 @@
       }
       // include all keys in original not yet accounted for by the source
       each(original, function (k, v) {
+        // make sure not to double include numerical array keys already in the source
         if (source && Array.isArray(original) && source.hasOwnProperty(k)) return;
         clone[k] = dehydrate(v);
       });
