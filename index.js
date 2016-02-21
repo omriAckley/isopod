@@ -1,6 +1,7 @@
 (function () {
 
   // TODO: serialzation/deserialization for: Error, Promise, Date, Generator, Proxy, TypedArray
+  // TODO: working with native functions (e.g. setTimeout)
 
   'use strict';
 
@@ -141,9 +142,8 @@
       }
       // include all keys in original not yet accounted for by the source
       each(original, function (k, v) {
-        if (!source || !source.hasOwnProperty(k)) { // TODO: does not work for functions with numerical properties because their source is a string, fix this
-          clone[k] = dehydrate(v);
-        }
+        if (source && Array.isArray(original) && source.hasOwnProperty(k)) return;
+        clone[k] = dehydrate(v);
       });
       return clone;
     }
