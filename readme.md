@@ -75,7 +75,7 @@ Any change that occurs to the cloned object **will not** affect the original and
 
 Install and include `isopod` into both environments: client and server, one iframe and another iframe, [tessel](https://tessel.io/) and [electron](http://electron.atom.io/) app—whatever two Javascript runtimes you want to clone data between.
 
-For any data you'd like to "richly clone", just before sending it across, call `isopod.serialize` on it. Just after parsing the data on the other end, call `isopod.deserialize` on it.
+Then for any data you'd like to "richly clone", just before sending it across call `isopod.serialize` on it. Just after parsing the data on the other end call `isopod.deserialize` on it.
 
 For example, you might have an [express](http://expressjs.com/) route handler on your node server that looks like:
 
