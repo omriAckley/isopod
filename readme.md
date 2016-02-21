@@ -121,6 +121,17 @@ fetch('/thing')
 
 For something more concrete, you can find runnable examples in the examples folder.
 
+# Similar libraries
+
+Some similar Javascript libraries:
+
+* [serialize-javascript](https://www.npmjs.com/package/serialize-javascript)
+* [serialijse](https://www.npmjs.com/package/serialijse)
+* [node-serialize](https://www.npmjs.com/package/node-serialize)
+* [picklejs](https://www.npmjs.com/package/picklejs)
+* [serialization](https://www.npmjs.com/package/serialization)
+* [unserializable](https://www.npmjs.com/package/unserializable)
+
 # Contributing
 
 Pull requests / issues / comments / hate mail welcome!
