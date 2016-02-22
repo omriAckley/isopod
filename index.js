@@ -1,6 +1,6 @@
 (function () {
 
-  // TODO: serialzation/deserialization for: Error, Promise, Date, Generator, Proxy, TypedArray
+  // TODO: serialzation/deserialization for: Promise, Date, Generator, Proxy, TypedArray
   // TODO: working with native functions (e.g. setTimeout)
 
   'use strict';
