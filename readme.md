@@ -53,7 +53,7 @@ This means that Javascript objects get converted into JSON strings, which are on
 With `isopod` you can remotely clone:
 
 * Plain objects, arrays, strings, numbers, booleans, and null (these are no different than what you can do *without* `isopod`)
-* `Infinity`, `undefined`, and `NaN`
+* `undefined`, ±`Infinity`, and `NaN`
 * Functions
 * Regular expressions
 * Symbols

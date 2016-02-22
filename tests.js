@@ -60,8 +60,14 @@ describe('cloning across transport', function () {
       expect(Number.isNaN(remoteClone)).to.equal(true);
     });
 
-    it('includes Infinity', function () {
+    it('includes infinity', function () {
       const original = Infinity;
+      const remoteClone = simulateTransportCloning(original);
+      expect(remoteClone).to.equal(original);
+    });
+
+    it('includes negative infinity', function () {
+      const original = -Infinity;
       const remoteClone = simulateTransportCloning(original);
       expect(remoteClone).to.equal(original);
     });
@@ -123,7 +129,7 @@ describe('cloning across transport', function () {
         e: 'me',
         f: new Set([Symbol('things'), ['fa', new Set([{x: 'y'}]), 1], 'so', 2]),
         g: new Map([[{la: 3}, {te: /[aeio]+/i}], [new Set(['and', 'but', 'of']), 4]]),
-        h: [null, Infinity, undefined, NaN]
+        h: [null, Infinity, undefined, NaN, -Infinity]
       };
       const remoteClone = simulateTransportCloning(original);
       expect(remoteClone).to.be.deeplyEquivalent(original);
@@ -202,6 +208,7 @@ describe('cloning across transport', function () {
 
     it('includes maps', function () {
       const original = new Map();
+      original.i = -Infinity;
       original.a = [];
       original.o = {};
       const remoteClone = simulateTransportCloning(original);

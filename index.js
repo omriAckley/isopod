@@ -28,18 +28,18 @@
   // -------------------
 
   function isSpecial (thing) {
-    return thing === undefined || thing === null || Number.isNaN(thing) || thing === Infinity;
+    return thing === undefined || thing === null || Number.isNaN(thing) || thing === Infinity || thing === -Infinity;
   }
 
-  function objectType (obj) {
-    if (isSpecial(obj)) return `${obj}`;
-    if (typeof obj === 'symbol') return 'Symbol';
-    if (typeof obj === 'function') return 'Function';
-    if (Object.prototype.toString.call(obj) === '[object Set]') return 'Set';
-    if (Object.prototype.toString.call(obj) === '[object Map]') return 'Map';
-    if (Array.isArray(obj)) return 'Array';
-    if (obj instanceof RegExp) return 'RegExp';
-    return 'Object';
+  function baseTypeOf (thing) {
+    return Object.prototype.toString.call(thing).slice(8,-1);
+  }
+
+  const allowedTypes = new Set(['Boolean', 'Number', 'Object', 'Array', 'Function', 'RegExp', 'Symbol', 'Set', 'Map', 'null', 'undefined', 'NaN', 'Infinity', '-Infinity']);
+
+  function isopodTypeOf (thing) {
+    const type = isSpecial(thing) ? `${thing}` : baseTypeOf(thing);
+    return allowedTypes.has(type) ? type : 'Unsupported';
   }
 
   const parensPattern = /\(.+\)/;
@@ -160,7 +160,7 @@
         // incorporate the object into the cache
         const dehydrated = assoc(thing);
         // set its type (helps streamline deserialization)
-        dehydrated.type = objectType(thing);
+        dehydrated.type = isopodTypeOf(thing);
         // set its "source" value (helps streamline deserialization)
         dehydrated.source = sourceValueFrom(thing, dehydrated.type);
         // set any additional keys not included in the source
@@ -206,6 +206,8 @@
       return NaN;
     } else if (dehydrated.type === 'Infinity') {
       return Infinity;
+    } else if (dehydrated.type === '-Infinity') {
+      return -Infinity;
     }
   }
 
