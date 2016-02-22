@@ -15,7 +15,8 @@ const nativeConstructors = new Set([
   Symbol,
   Array,
   Map,
-  RegExp
+  RegExp,
+  Error
 ]);
 const nativePrototypes = new Set();
 nativeConstructors.forEach(function (constructor) {
@@ -26,14 +27,8 @@ function isNative (thing) {
   return nativeConstructors.has(thing) || nativePrototypes.has(thing);
 }
 
-function objectType (obj) {
-  if (typeof obj === 'symbol') return 'Symbol';
-  if (typeof obj === 'function') return 'Function';
-  if (obj instanceof Set) return 'Set';
-  if (obj instanceof Map) return 'Map';
-  if (Array.isArray(obj)) return 'Array';
-  if (obj instanceof RegExp) return 'RegExp';
-  return 'Object';
+function baseTypeOf (thing) {
+  return Object.prototype.toString.call(thing).slice(8,-1);
 }
 
 function areSamePrimitive (x, y) {
@@ -51,8 +46,8 @@ function areDeeplyEquivalentOnly (actual, expected, seen) {
   } else {
     seen.set(actual, expected);
   }
-  const aType = objectType(actual);
-  const eType = objectType(expected);
+  const aType = baseTypeOf(actual);
+  const eType = baseTypeOf(expected);
   if (aType !== eType) return false;
   const aKeys = Object.keys(actual);
   const eKeys = Object.keys(expected);
@@ -69,11 +64,20 @@ function areDeeplyEquivalentOnly (actual, expected, seen) {
     return Symbol.prototype.toString.call(actual) === Symbol.prototype.toString.call(expected);
   } else if (aType === 'Function') {
     return Function.prototype.toString.call(actual) === Function.prototype.toString.call(expected);
+  } else if (aType === 'Error') {
+    return actual.message === expected.message;
   } else if (aType === 'Set') {
-    if (actual.size !== expected.size) return false;
-    const expectedCopy = new Set(expected);
+    const actualCopy = new Set();
+    Set.prototype.forEach.call(actual, function (elem) {
+      actualCopy.add(elem);
+    });
+    const expectedCopy = new Set();
+    Set.prototype.forEach.call(expected, function (elem) {
+      expectedCopy.add(elem);
+    });
+    if (actualCopy.size !== expectedCopy.size) return false;
     outer:
-    for (let aElem of actual) {
+    for (let aElem of actualCopy) {
       for (let eElem of expectedCopy) {
         if (areDeeplyEquivalentOnly(aElem, eElem, seen)) {
           expectedCopy.delete(eElem);
@@ -84,10 +88,17 @@ function areDeeplyEquivalentOnly (actual, expected, seen) {
     }
     return true;
   } else if (aType === 'Map') {
-    if (actual.size !== expected.size) return false;
-    const expectedCopy = new Map(expected);
+    const actualCopy = new Map();
+    Map.prototype.forEach.call(actual, function (v, k) {
+      actualCopy.set(k, v);
+    });
+    const expectedCopy = new Map();
+    Map.prototype.forEach.call(expected, function (v, k) {
+      expectedCopy.set(k, v);
+    });
+    if (actualCopy.size !== expectedCopy.size) return false;
     outer:
-    for (let aEntry of actual) {
+    for (let aEntry of actualCopy) {
       for (let eEntry of expectedCopy) {
         if (areDeeplyEquivalentOnly(aEntry, eEntry, seen)) {
           expectedCopy.delete(eEntry[0]);

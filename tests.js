@@ -102,6 +102,12 @@ describe('cloning across transport', function () {
       expect(remoteClone).to.be.deeplyEquivalent(original);
     });
 
+    it('includes errors', function () {
+      const original = new Error('SOS');
+      const remoteClone = simulateTransportCloning(original);
+      expect(remoteClone).to.be.deeplyEquivalent(original);
+    });
+
     it('includes symbols', function () {
       const original = Symbol('fluff');
       const remoteClone = simulateTransportCloning(original);
@@ -170,47 +176,66 @@ describe('cloning across transport', function () {
 
   describe('for non-plain objects with assigned keys', function () {
 
+    var keys;
+    beforeEach(function () {
+      keys = {
+        a: null,
+        b: undefined,
+        c: false,
+        d: 123,
+        e: NaN,
+        f: Infinity,
+        g: -Infinity,
+        h: 'abcd',
+        i: Symbol('foo'),
+        j: /\d+/igm,
+        k: new Error(),
+        l: {},
+        m: [],
+        n: function () {},
+        o: new Set(),
+        p: new Map()
+      };
+    })
+
     it('includes arrays', function () {
       const original = [];
-      original.n = null;
-      original.s = 'abcd';
-      original.f = function () {};
+      Object.assign(original, keys);
       const remoteClone = simulateTransportCloning(original);
       expect(remoteClone).to.be.deeplyEquivalent(original);
     });
 
     it('includes functions', function () {
       const original = function () {};
-      original.u = undefined;
-      original.n = 123;
-      original.r = /\d+/igm;
+      Object.assign(original, keys);
       const remoteClone = simulateTransportCloning(original);
       expect(remoteClone).to.be.deeplyEquivalent(original);
     });
 
     it('includes regular expressions', function () {
       const original = new RegExp();
-      original.i = Infinity;
-      original.b = true;
-      original.s = new Set();
+      Object.assign(original, keys);
+      const remoteClone = simulateTransportCloning(original);
+      expect(remoteClone).to.be.deeplyEquivalent(original);
+    });
+
+    it('includes errors', function () {
+      const original = new Error();
+      Object.assign(original, keys);
       const remoteClone = simulateTransportCloning(original);
       expect(remoteClone).to.be.deeplyEquivalent(original);
     });
 
     it('includes sets', function () {
       const original = new Set();
-      original.n = NaN;
-      original.s = Symbol('foo');
-      original.m = new Map();
+      Object.assign(original, keys);
       const remoteClone = simulateTransportCloning(original);
       expect(remoteClone).to.be.deeplyEquivalent(original);
     });
 
     it('includes maps', function () {
       const original = new Map();
-      original.i = -Infinity;
-      original.a = [];
-      original.o = {};
+      Object.assign(original, keys);
       const remoteClone = simulateTransportCloning(original);
       expect(remoteClone).to.be.deeplyEquivalent(original);
     });
@@ -231,7 +256,13 @@ describe('cloning across transport', function () {
         g: function (foo) {return foo * 2},
         h: /regex/ig,
         i: new Set(),
-        j: new Map()
+        j: new Map(),
+        k: undefined,
+        l: NaN,
+        m: null,
+        n: Infinity,
+        o: -Infinity,
+        p: new Error('boo')
       };
     });
 
@@ -257,6 +288,13 @@ describe('cloning across transport', function () {
 
     it('includes regular expressions', function () {
       const original = new RegExp();
+      Object.setPrototypeOf(original, otherProto);
+      const remoteClone = simulateTransportCloning(original);
+      expect(remoteClone).to.be.deeplyEquivalent(original);
+    });
+
+    it('includes errors', function () {
+      const original = new Error();
       Object.setPrototypeOf(original, otherProto);
       const remoteClone = simulateTransportCloning(original);
       expect(remoteClone).to.be.deeplyEquivalent(original);

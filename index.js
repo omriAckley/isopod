@@ -35,7 +35,7 @@
     return Object.prototype.toString.call(thing).slice(8,-1);
   }
 
-  const allowedTypes = new Set(['Boolean', 'Number', 'Object', 'Array', 'Function', 'RegExp', 'Symbol', 'Set', 'Map', 'null', 'undefined', 'NaN', 'Infinity', '-Infinity']);
+  const allowedTypes = new Set(['Boolean', 'Number', 'Object', 'Array', 'Function', 'RegExp', 'Error', 'Symbol', 'Set', 'Map', 'null', 'undefined', 'NaN', 'Infinity', '-Infinity']);
 
   function isopodTypeOf (thing) {
     const type = isSpecial(thing) ? `${thing}` : baseTypeOf(thing);
@@ -54,7 +54,8 @@
     Symbol,
     Array,
     Map,
-    RegExp
+    RegExp,
+    Error
   ]);
   const nativePrototypes = new Set();
   nativeConstructors.forEach(function (constructor) {
@@ -102,6 +103,11 @@
         return Function.prototype.toString.call(original);
       } else if (type === 'RegExp') {
         return [original.source, flags(original)];
+      } else if (type === 'Error') {
+        return {
+          message: Object.prototype.hasOwnProperty.call(original, 'message') ? original.message : undefined,
+          stack: original.stack
+        };
       }
       const source = [];
       if (type === 'Set') {
@@ -183,31 +189,28 @@
 
   // convert a dehydrated object back into something of the correct type
   function typedFromDehydrated (dehydrated) {
-    if (dehydrated.type === 'Symbol') {
-      return Symbol(dehydrated.source);
-    } else if (dehydrated.type === 'Function') {
-      // TODO: alternative to eval
-      return eval(`(${dehydrated.source})`);
-    } else if (dehydrated.type === 'Set') {
-      return new Set();
-    } else if (dehydrated.type === 'Map') {
-      return new Map();
-    } else if (dehydrated.type === 'Array') {
-      return [];
-    } else if (dehydrated.type === 'RegExp') {
-      return new RegExp(dehydrated.source[0], dehydrated.source[1]);
-    } else if (dehydrated.type === 'Object') {
-      return {};
-    } else if (dehydrated.type === 'null') {
-      return null;
-    } else if (dehydrated.type === 'undefined') {
-      return undefined;
-    } else if (dehydrated.type === 'NaN') {
-      return NaN;
-    } else if (dehydrated.type === 'Infinity') {
-      return Infinity;
-    } else if (dehydrated.type === '-Infinity') {
-      return -Infinity;
+    switch (dehydrated.type) {
+      case 'Symbol': return Symbol(dehydrated.source);
+      case 'Function': return eval(`(${dehydrated.source})`); // TODO: alternative to eval
+      case 'Set': return new Set();
+      case 'Map': return new Map();
+      case 'Array': return [];
+      case 'RegExp': return new RegExp(dehydrated.source[0], dehydrated.source[1]);
+      case 'Error':
+        const err = Error(dehydrated.source.message);
+        if (dehydrated.source.stack) {
+          Object.defineProperty(err, 'stack', {
+            value: dehydrated.source.stack,
+            enumerable: false
+          });
+        }
+        return err;
+      case 'Object': return {};
+      case 'null': return null;
+      case 'undefined': return undefined;
+      case 'NaN': return NaN;
+      case 'Infinity': return Infinity;
+      case '-Infinity': return -Infinity;
     }
   }
 
