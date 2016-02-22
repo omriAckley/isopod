@@ -39,7 +39,7 @@
 
   function isopodTypeOf (thing) {
     const type = isSpecial(thing) ? `${thing}` : baseTypeOf(thing);
-    return allowedTypes.has(type) ? type : 'Unsupported';
+    return allowedTypes.has(type) ? type : 'Unsupported'; // TODO: consider throwing error for unsupported types
   }
 
   const parensPattern = /\(.+\)/;
@@ -95,36 +95,39 @@
     function sourceValueFrom (original, type) {
       // objects and special values don't have a "source"
       if (type === 'Object' || isSpecial(original)) return;
-      if (type === 'Symbol') {
+      switch (type) {
         // a symbol's source is the string used to construct it
-        return getSymbolString(original);
-      } else if (type === 'Function') {
+        case 'Symbol': return getSymbolString(original);
         // a function's source is its source string
-        return Function.prototype.toString.call(original);
-      } else if (type === 'RegExp') {
-        return [original.source, flags(original)];
-      } else if (type === 'Error') {
-        return {
-          message: Object.prototype.hasOwnProperty.call(original, 'message') ? original.message : undefined,
-          stack: original.stack
-        };
+        case 'Function': return Function.prototype.toString.call(original);
+        case 'RegExp': return [original.source, flags(original)];
+        case 'Error':
+          return {
+            message: Object.prototype.hasOwnProperty.call(original, 'message') ? original.message : undefined,
+            stack: original.stack
+          };
       }
+      // all other possibilities will involve a source that is an array
       const source = [];
-      if (type === 'Set') {
-        // a set's source is an array of the set elements
-        Set.prototype.forEach.call(original, function (elem) {
-          source.push(dehydrate(elem));
-        });
-      } else if (type === 'Map') {
-        // a map's source is an array of key-value pair arrays
-        Map.prototype.forEach.call(original, function (v, k) {
-          source.push([k,v].map(dehydrate));
-        });
-      } else if (type === 'Array') {
-        // an array's source is an array copy of its elements
-        Array.prototype.forEach.call(original, function (elem, idx) {
-          source[idx] = dehydrate(elem);
-        });
+      switch (type) {
+        case 'Set':
+          // a set's source is an array of the set elements
+          Set.prototype.forEach.call(original, function (elem) {
+            source.push(dehydrate(elem));
+          });
+          break;
+        case 'Map':
+          // a map's source is an array of key-value pair arrays
+          Map.prototype.forEach.call(original, function (v, k) {
+            source.push([k,v].map(dehydrate));
+          });
+          break;
+        case 'Array':
+          // an array's source is an array copy of its elements
+          Array.prototype.forEach.call(original, function (elem, idx) {
+            source[idx] = dehydrate(elem);
+          });
+          break;
       }
       return source;
     }
@@ -222,23 +225,27 @@
     function possibleRef (v) {
       return Array.isArray(v) ? refs[v[0]] : v;
     }
-    if (dehydrated.type === 'Set') {
-      // a set incorporates its source array as elements
-      dehydrated.source.forEach(function (elem) {
-        hydrated.add(possibleRef(elem));
-      });
-    } else if (dehydrated.type === 'Map') {
-      // a map incorporates its source array as key-value entries
-      dehydrated.source.forEach(function (mapEntry) {
-        const k = mapEntry[0]; // TODO: could replace with destructuring
-        const v = mapEntry[1]; // TODO: could replace with destructuring
-        hydrated.set(possibleRef(k), possibleRef(v));
-      });
-    } else if (dehydrated.type === 'Array') {
-      // an array incorporates its source array as elements
-      dehydrated.source.forEach(function (elem) {
-        hydrated.push(possibleRef(elem));
-      });
+    switch (dehydrated.type) {
+      case 'Set':
+        // a set incorporates its source array as elements
+        dehydrated.source.forEach(function (elem) {
+          hydrated.add(possibleRef(elem));
+        });
+        break;
+      case 'Map':
+        // a map incorporates its source array as key-value entries
+        dehydrated.source.forEach(function (mapEntry) {
+          const k = mapEntry[0]; // TODO: could replace with destructuring
+          const v = mapEntry[1]; // TODO: could replace with destructuring
+          hydrated.set(possibleRef(k), possibleRef(v));
+        });
+        break;
+      case 'Array':
+        // an array incorporates its source array as elements
+        dehydrated.source.forEach(function (elem) {
+          hydrated.push(possibleRef(elem));
+        });
+        break;
     }
     // incorporate any additional keys from the dehydrated object
     each(dehydrated.keys, function (k, v) {
