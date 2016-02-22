@@ -138,7 +138,10 @@
       }
       // include the original's constructor if it has one
       if (hasNonNativeConstructor(original)) {
-        clone.constructor = dehydrate(original.constructor);
+        const constructor = original.constructor;
+        if (constructor instanceof Object && constructor.prototype === original) {
+          clone.constructor = dehydrate(constructor);
+        }
       }
       // include all keys in original not yet accounted for by the source
       each(original, function (k, v) {
