@@ -23,9 +23,21 @@
     "deserialization"
   ],
   "devDependencies": {
+    "browserify": "^13.0.0",
     "chai": "^3.5.0",
     "coveralls": "^2.11.6",
     "istanbul": "^0.4.2",
-    "mocha": "^2.4.5"
+    "mocha": "^2.4.5",
+    "testling": "^1.7.1"
+  },
+  "testling": {
+    "harness": "mocha-bdd",
+    "files": "tests.js",
+    "browsers": [
+      "chrome/latest",
+      "firefox/latest",
+      "opera/latest",
+      "ie/latest"
+    ]
   }
 }
