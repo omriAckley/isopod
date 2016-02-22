@@ -123,8 +123,6 @@ For something more concrete, you can find runnable examples in the examples fold
 
 # Similar libraries
 
-Some similar Javascript libraries:
-
 * [serialize-javascript](https://www.npmjs.com/package/serialize-javascript)
 * [serialijse](https://www.npmjs.com/package/serialijse)
 * [node-serialize](https://www.npmjs.com/package/node-serialize)
