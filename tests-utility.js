@@ -31,13 +31,8 @@ function baseTypeOf (thing) {
   return Object.prototype.toString.call(thing).slice(8,-1);
 }
 
-function areSamePrimitive (x, y) {
-  if (Number.isNaN(x)) return Number.isNaN(y);
-  else return x === y;
-}
-
 function areDeeplyEquivalentOnly (actual, expected, seen) {
-  if (isPrimitive(actual) || isPrimitive(expected)) return areSamePrimitive(actual, expected);
+  if (isPrimitive(actual) || isPrimitive(expected)) return Object.is(actual, expected);
   if (isNative(actual) || isNative(expected)) return actual === expected;
   if (actual === expected) return false;
   seen = seen || new Map();

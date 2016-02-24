@@ -44,6 +44,14 @@
     typedArrayTypes.set(constructor.name, constructor);
   });
 
+  const specialTypes = new Set([
+    undefined,
+    null,
+    NaN,
+    Infinity,
+    -Infinity
+  ]);
+
   const nativeConstructors = new Set([
     Boolean,
     Number,
@@ -70,20 +78,16 @@
   nativeConstructors.forEach(function (constructor) {
     allowedTypes.add(constructor.name);
   });
-  ['null', 'undefined', 'NaN', 'Infinity', '-Infinity'].forEach(function (specialType) {
-    allowedTypes.add(specialType);
+  specialTypes.forEach(function (specialType) {
+    allowedTypes.add(`${specialType}`);
   });
-
-  function isSpecial (thing) {
-    return thing === undefined || thing === null || Number.isNaN(thing) || thing === Infinity || thing === -Infinity;
-  }
 
   function baseTypeOf (thing) {
     return Object.prototype.toString.call(thing).slice(8,-1);
   }
 
   function isopodTypeOf (thing) {
-    const type = isSpecial(thing) ? `${thing}` : baseTypeOf(thing);
+    const type = specialTypes.has(thing) ? `${thing}` : baseTypeOf(thing);
     return allowedTypes.has(type) ? type : 'Unsupported'; // TODO: consider throwing error for unsupported types
   }
 
@@ -98,7 +102,7 @@
 
   // TODO: better name
   function isRef (thing) {
-    return thing instanceof Object || typeof thing === 'symbol' || isSpecial(thing); 
+    return thing instanceof Object || typeof thing === 'symbol' || specialTypes.has(thing); 
   }
 
   function isPlainOrTypedArray (thing) {
@@ -129,7 +133,7 @@
     // catch-all to obtain various meaningful "source" values from native Object types
     function sourceValueFrom (original, type) {
       // objects and special values don't have a "source"
-      if (type === 'Object' || isSpecial(original)) return;
+      if (type === 'Object' || specialTypes.has(original)) return;
       if (typedArrayTypes.has(type)) {
         // a typed array's source is simply a reference to its buffer
         return dehydrate(original.buffer);
@@ -172,7 +176,7 @@
     // return any keys in the original not accounted for in the source
     function cloneKeys (original, source) {
       // special values do not have keys
-      if (isSpecial(original)) return;
+      if (specialTypes.has(original)) return;
       const clone = {};
       const proto = Object.getPrototypeOf(original);
       // include original's __proto__ when cloning it, if it's non-native
@@ -259,7 +263,7 @@
   // use the dehydrated format to populate an empty object of the correct type
   function hydrateOne (hydrated, dehydrated, refs) {
     // special values need no further hydration
-    if (isSpecial(hydrated)) return;
+    if (specialTypes.has(hydrated)) return;
     // account for any objects that are duplicate references
     function possibleRef (v) {
       return Array.isArray(v) ? refs[v[0]] : v;
