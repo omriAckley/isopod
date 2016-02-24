@@ -1,6 +1,6 @@
 (function () {
 
-  // TODO: serialzation/deserialization for: Promise, Date, Generator, Proxy, DataView
+  // TODO: serialzation/deserialization for: Date, Promise, Generator, Proxy, DataView
   // TODO: working with native functions (e.g. setTimeout)
 
   'use strict';

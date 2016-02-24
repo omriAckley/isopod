@@ -66,10 +66,11 @@ With `isopod` you can remotely clone:
 
 Note that cloning will exclude non-enumerable properties (except for the `.constructor` property—this in order to clone prototypes effectively). Here's a not-necessarily complete list of what you might not *yet* be able to clone:
 
-* Promises
 * Dates
+* Promises
 * Generators
 * Proxies
+* [Bound](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind) functions
 
 Any change that occurs to the cloned object **will not** affect the original and vice-versa. Those objects exist in different runtimes and cannot directly affect each other. If you want automatic synchronization, `isopod` is not that, though you could build something like that "on top" of it.
 
