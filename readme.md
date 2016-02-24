@@ -62,6 +62,7 @@ With `isopod` you can remotely clone:
 * Maps
 * Anything with a non-standard prototype
 * Anything with circular or duplicate references to the same object or symbol
+* Typed arrays
 
 Note that cloning will exclude non-enumerable properties (except for the `.constructor` property—this in order to clone prototypes effectively). Here's a not-necessarily complete list of what you might not *yet* be able to clone:
 
@@ -69,7 +70,6 @@ Note that cloning will exclude non-enumerable properties (except for the `.const
 * Dates
 * Generators
 * Proxies
-* Typed arrays
 
 Any change that occurs to the cloned object **will not** affect the original and vice-versa. Those objects exist in different runtimes and cannot directly affect each other. If you want automatic synchronization, `isopod` is not that, though you could build something like that "on top" of it.
 
