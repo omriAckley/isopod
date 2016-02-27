@@ -1,6 +1,6 @@
 {
   "name": "isopod",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "Universal (isomorphic) Javascript object serialization / deserialization",
   "main": "index.js",
   "scripts": {
