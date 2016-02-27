@@ -5,8 +5,8 @@
 
   'use strict';
 
-  const glob = (typeof global === 'object') ? global : window;
-  const exports = (typeof module === 'object' && typeof module.exports === 'object') ? module.exports : (glob.isopod = {});
+  const globalObject = (typeof global === 'object') ? global : window;
+  const exports = (typeof module === 'object' && typeof module.exports === 'object') ? module.exports : (globalObject.isopod = {});
 
   // ---------------
   // -- UTILITIES --
