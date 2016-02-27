@@ -74,7 +74,7 @@ describe('cloning across transport', function () {
 
   });
 
-  describe('for stanard objects', function () {
+  describe('for standard objects', function () {
 
     it('includes plain objects', function () {
       const original = {a: 'do', b: 're', c: 'me', d: 1, e: 2, f: 3};
@@ -126,6 +126,16 @@ describe('cloning across transport', function () {
       expect(remoteClone).to.be.deeplyEquivalent(original);
     });
 
+    it('includes typed arrays', function () {
+      [Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array, Float32Array, Float64Array]
+      .forEach(function (typedArrayConstructor) {
+        const original = new typedArrayConstructor(1);
+        original[0] = 123;
+        const remoteClone = simulateTransportCloning(original);
+        expect(remoteClone).to.be.deeplyEquivalent(original);
+      });
+    });
+
     it('includes arbitrary combinations of the above', function () {
       const original = {
         a: [{b: 'do'}, 're', new Map([['beep', [10,20,30]], [[Symbol('foo'), 'baz'], 'boop']])],
@@ -135,7 +145,13 @@ describe('cloning across transport', function () {
         e: 'me',
         f: new Set([Symbol('things'), ['fa', new Set([{x: 'y'}]), 1], 'so', 2]),
         g: new Map([[{la: 3}, {te: /[aeio]+/i}], [new Set(['and', 'but', 'of']), 4]]),
-        h: [null, Infinity, undefined, NaN, -Infinity]
+        h: [null, Infinity, undefined, NaN, -Infinity],
+        i: [Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array, Float32Array, Float64Array]
+          .map(function (typedArrayConstructor) {
+            const instance = new typedArrayConstructor(1);
+            instance[0] = 123456;
+            return instance;
+          })
       };
       const remoteClone = simulateTransportCloning(original);
       expect(remoteClone).to.be.deeplyEquivalent(original);
@@ -172,6 +188,19 @@ describe('cloning across transport', function () {
       expect(remoteClone).to.be.deeplyEquivalent(original);
     });
 
+    it('includes typed arrays that share the same array buffer', function () {
+      const buffer = new ArrayBuffer(8);
+      const original = {
+        u8: new Uint8Array(buffer),
+        u16: new Uint16Array(buffer),
+        u32: new Uint32Array(buffer),
+        f64: new Float64Array(buffer)
+      };
+      original.f64[0] = 123456789;
+      const remoteClone = simulateTransportCloning(original);
+      expect(remoteClone).to.be.deeplyEquivalent(original);
+    });
+
   });
 
   describe('for non-plain objects with assigned keys', function () {
@@ -194,7 +223,8 @@ describe('cloning across transport', function () {
         m: [],
         n: function () {},
         o: new Set(),
-        p: new Map()
+        p: new Map(),
+        q: new Uint8Array()
       };
     })
 
@@ -240,6 +270,17 @@ describe('cloning across transport', function () {
       expect(remoteClone).to.be.deeplyEquivalent(original);
     });
 
+    it('includes typed arrays', function () {
+      [Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array, Float32Array, Float64Array]
+      .forEach(function (typedArrayConstructor) {
+        const original = new typedArrayConstructor(1);
+        original[0] = 987654321;
+        Object.assign(original, keys);
+        const remoteClone = simulateTransportCloning(original);
+        expect(remoteClone).to.be.deeplyEquivalent(original);
+      });
+    });
+
   });
 
   describe('for objects with non-standard prototypes', function () {
@@ -262,7 +303,8 @@ describe('cloning across transport', function () {
         m: null,
         n: Infinity,
         o: -Infinity,
-        p: new Error('boo')
+        p: new Error('boo'),
+        q: new Uint8Array([9,8,7])
       };
     });
 
@@ -312,6 +354,16 @@ describe('cloning across transport', function () {
       Object.setPrototypeOf(original, otherProto);
       const remoteClone = simulateTransportCloning(original);
       expect(remoteClone).to.be.deeplyEquivalent(original);
+    });
+
+    it('includes typed arrays', function () {
+      [Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array, Float32Array, Float64Array]
+      .forEach(function (typedArrayConstructor) {
+        const original = new typedArrayConstructor(1);
+        Object.setPrototypeOf(original, otherProto);
+        const remoteClone = simulateTransportCloning(original);
+        expect(remoteClone).to.be.deeplyEquivalent(original);
+      });
     });
 
     it('incorporates non-standard constructors', function () {

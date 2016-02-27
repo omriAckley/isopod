@@ -16,7 +16,17 @@ const nativeConstructors = new Set([
   Array,
   Map,
   RegExp,
-  Error
+  Error,
+  ArrayBuffer,
+  Int8Array,
+  Uint8Array,
+  Uint8ClampedArray,
+  Int16Array,
+  Uint16Array,
+  Int32Array,
+  Uint32Array,
+  Float32Array,
+  Float64Array
 ]);
 const nativePrototypes = new Set();
 nativeConstructors.forEach(function (constructor) {

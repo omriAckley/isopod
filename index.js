@@ -110,6 +110,19 @@
     return type === 'Array' || typedArrayTypes.has(type);
   }
 
+  function getTypedArrayBuffer (typedArray) {
+    // in case a typed array has a non-standard prototype
+    const currentProto = Object.getPrototypeOf(typedArray);
+    const originalProto = typedArrayTypes.get(isopodTypeOf(typedArray)).prototype;
+    // temporarily change prototype back to original
+    Object.setPrototypeOf(typedArray, originalProto);
+    // grab buffer off of it
+    const buffer = typedArray.buffer;
+    // change back to assigned prototype
+    Object.setPrototypeOf(typedArray, currentProto);
+    return buffer;
+  }
+
   // given some object or primitive, convert it into a format that will retain all its details when stringified
   exports.serialize = function (root) {
 
@@ -136,7 +149,7 @@
       if (type === 'Object' || specialTypes.has(original)) return;
       if (typedArrayTypes.has(type)) {
         // a typed array's source is simply a reference to its buffer
-        return dehydrate(original.buffer);
+        return dehydrate(getTypedArrayBuffer(original));
       }
       switch (type) {
         // a symbol's source is the string used to construct it
