@@ -135,14 +135,14 @@
       const path = item.path;
       if (globallyAccessible.has(obj)) continue;
       globallyAccessible.set(obj, path);
-      for (let propertyName of [...Object.getOwnPropertyNames(obj), '__proto__']) {
+      for (let propertyName of Object.getOwnPropertyNames(obj).concat(['__proto__'])) {
         let child;
         try {child = obj[propertyName];}
         catch (e) {continue;}
         if (!isRefable(child)) continue;
         queue.push({
           value: child,
-          path: [...path, propertyName]
+          path: path.concat([propertyName])
         });
       }
     }
