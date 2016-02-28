@@ -2,6 +2,9 @@
   "name": "isopod",
   "version": "0.2.2",
   "description": "Universal (isomorphic) Javascript object serialization / deserialization",
+  "engines": {
+    "node": ">=4.0.0"
+  },
   "main": "index.js",
   "scripts": {
     "test": "mocha --reporter spec tests.js",
