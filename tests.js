@@ -148,6 +148,13 @@ describe('cloning across transport', function () {
       });
     });
 
+    it('includes data views', function () {
+      const original = new DataView(new ArrayBuffer(1));
+      original.setInt8(0,456);
+      const remoteClone = simulateTransportCloning(original);
+      expect(remoteClone).to.be.deeplyEquivalent(original);
+    });
+
     it('includes arbitrary combinations of the above', function () {
       const original = {
         a: [{b: 'do', 1: new Date()}, 're', new Map([['beep', [10,20,30]], [[Symbol('foo'), 'baz'], 'boop']])],
@@ -155,7 +162,7 @@ describe('cloning across transport', function () {
         c: /^http:\/\/.*/g,
         d: Symbol('words'),
         e: 'me',
-        f: new Set([Symbol('things'), ['fa', new Set([{x: 'y'}]), 1], 'so', 2, new Error('BAM!')]),
+        f: new Set([Symbol('things'), ['fa', new Set([{x: 'y'}]), 1], 'so', 2, new Error('BAM!')], new DataView(new ArrayBuffer(10))),
         g: new Map([[{la: 3}, {te: /[aeio]+/i}], [new Set(['and', 'but', 'of']), 4]]),
         h: [null, Infinity, undefined, NaN, -Infinity],
         i: new ArrayBuffer(3),
@@ -239,7 +246,8 @@ describe('cloning across transport', function () {
         p: new Set(),
         q: new Map(),
         r: new ArrayBuffer(),
-        s: new Uint8Array()
+        s: new Uint8Array(),
+        t: new DataView(new ArrayBuffer())
       };
     })
 
@@ -310,6 +318,14 @@ describe('cloning across transport', function () {
       });
     });
 
+    it('includes data views', function () {
+      const original = new DataView(new ArrayBuffer(1));
+      original.setInt8(0,789);
+      Object.assign(original, keys);
+      const remoteClone = simulateTransportCloning(original);
+      expect(remoteClone).to.be.deeplyEquivalent(original);
+    });
+
   });
 
   describe('for objects with non-standard prototypes', function () {
@@ -335,7 +351,8 @@ describe('cloning across transport', function () {
         p: new Error('boo'),
         q: new Date(),
         r: new ArrayBuffer(1),
-        s: new Uint8Array([9,8,7])
+        s: new Uint8Array([9,8,7]),
+        t: new DataView(new ArrayBuffer(2))
       };
     });
 
@@ -409,6 +426,14 @@ describe('cloning across transport', function () {
         const remoteClone = simulateTransportCloning(original);
         expect(remoteClone).to.be.deeplyEquivalent(original);
       });
+    });
+
+    it('includes data views', function () {
+      const original = new DataView(new ArrayBuffer(1));
+      original.setInt8(0,321);
+      Object.setPrototypeOf(original, otherProto);
+      const remoteClone = simulateTransportCloning(original);
+      expect(remoteClone).to.be.deeplyEquivalent(original);
     });
 
     it('incorporates non-standard constructors', function () {

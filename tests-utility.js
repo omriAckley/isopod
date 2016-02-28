@@ -27,7 +27,8 @@ const nativeConstructors = new Set([
   Int32Array,
   Uint32Array,
   Float32Array,
-  Float64Array
+  Float64Array,
+  DataView
 ]);
 const nativePrototypes = new Set();
 nativeConstructors.forEach(function (constructor) {
@@ -114,6 +115,8 @@ function areDeeplyEquivalentOnly (actual, expected, seen) {
       return false;
     }
     return true;
+  } else if (aType === 'ArrayBuffer') {
+    return areDeeplyEquivalentOnly(Array.from(new Uint8Array(actual)), Array.from(new Uint8Array(expected)));
   } else {
     return true;
   }

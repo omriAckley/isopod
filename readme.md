@@ -63,7 +63,7 @@ With `isopod` you can remotely clone:
 * Maps
 * Anything with a non-standard prototype
 * Anything with circular or duplicate references to the same object or symbol
-* Typed arrays
+* Typed arrays / DataViews
 
 Note that cloning will exclude non-enumerable properties (except for the `.constructor` property—this in order to clone prototypes effectively). Here's a not-necessarily complete list of what you might not *yet* be able to clone:
 

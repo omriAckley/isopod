@@ -1,6 +1,6 @@
 (function () {
 
-  // TODO: serialzation/deserialization for: Promise, Generator, Proxy, DataView
+  // TODO: serialzation/deserialization for: Promise, Generator, Proxy
   // TODO: working with native functions (e.g. setTimeout)
 
   'use strict';
@@ -39,9 +39,21 @@
     Float64Array
   ]);
 
-  const typedArrayTypes = new Map();
+  const typedArrayTypes = new Set();
   typedArrayConstructors.forEach(function (constructor) {
-    typedArrayTypes.set(constructor.name, constructor);
+    typedArrayTypes.add(constructor.name);
+  });
+
+  const bufferableConstructors = new Set([
+    DataView
+  ]);
+  typedArrayConstructors.forEach(function (constructor) {
+    bufferableConstructors.add(constructor);
+  });
+
+  const bufferableTypes = new Map();
+  bufferableConstructors.forEach(function (constructor) {
+    bufferableTypes.set(constructor.name, constructor);
   });
 
   const specialTypes = new Set([
@@ -66,7 +78,7 @@
     ArrayBuffer,
     Date
   ]);
-  typedArrayConstructors.forEach(function (constructor) {
+  bufferableConstructors.forEach(function (constructor) {
     nativeConstructors.add(constructor);
   });
 
@@ -111,17 +123,34 @@
     return type === 'Array' || typedArrayTypes.has(type);
   }
 
-  function getTypedArrayBuffer (typedArray) {
-    // in case a typed array has a non-standard prototype
-    const currentProto = Object.getPrototypeOf(typedArray);
-    const originalProto = typedArrayTypes.get(isopodTypeOf(typedArray)).prototype;
+  // function getTypedArrayBuffer (typedArray) {
+  //   // in case a typed array has a non-standard prototype
+  //   const currentProto = Object.getPrototypeOf(typedArray);
+  //   const originalProto = bufferableTypes.get(isopodTypeOf(typedArray)).prototype;
+  //   // temporarily change prototype back to original
+  //   Object.setPrototypeOf(typedArray, originalProto);
+  //   // grab buffer off of it
+  //   const buffer = typedArray.buffer;
+  //   // change back to assigned prototype
+  //   Object.setPrototypeOf(typedArray, currentProto);
+  //   return buffer;
+  // }
+
+  function bufferableSource (bufferable) {
+    // in case a bufferable has a non-standard prototype
+    const currentProto = Object.getPrototypeOf(bufferable);
+    const originalProto = bufferableTypes.get(isopodTypeOf(bufferable)).prototype;
     // temporarily change prototype back to original
-    Object.setPrototypeOf(typedArray, originalProto);
-    // grab buffer off of it
-    const buffer = typedArray.buffer;
+    Object.setPrototypeOf(bufferable, originalProto);
+    // a bufferable's source contains its buffer, the byteOffset, and the length
+    const source = {
+      buffer: bufferable.buffer,
+      byteOffset: bufferable.byteOffset,
+      length: bufferable.length
+    };
     // change back to assigned prototype
-    Object.setPrototypeOf(typedArray, currentProto);
-    return buffer;
+    Object.setPrototypeOf(bufferable, currentProto);
+    return source;
   }
 
   // given some object or primitive, convert it into a format that will retain all its details when stringified
@@ -148,9 +177,11 @@
     function sourceValueFrom (original, type) {
       // objects and special values don't have a "source"
       if (type === 'Object' || specialTypes.has(original)) return;
-      if (typedArrayTypes.has(type)) {
-        // a typed array's source is simply a reference to its buffer
-        return dehydrate(getTypedArrayBuffer(original));
+      if (bufferableTypes.has(type)) {
+        // make sure to attach the buffer by reference
+        const source = bufferableSource(original);
+        source.buffer = dehydrate(source.buffer);
+        return source;
       }
       switch (type) {
         // a symbol's source is the string used to construct it
@@ -328,28 +359,30 @@
     if (!Array.isArray(serialized)) return serialized;
     // the mapping corresponds the being-hydrated and dehydrated versions of the data
     const mapping = new Map();
-    // stores typed arrays to get to after the first pass
-    const todoTypedArrays = new Map();
+    // stores bufferables to get to after the first pass
+    const todoBufferables = new Map();
     // hold references to the being-hydrated objects
     const refs = serialized.map(function (dehydrated, index) {
-      if (typedArrayTypes.has(dehydrated.type)) {
+      if (bufferableTypes.has(dehydrated.type)) {
         // will need the dehydrated version and index in refs array for later use
-        todoTypedArrays.set(dehydrated, index);
+        todoBufferables.set(dehydrated, index);
       } else {
         const emptyHydrated = typedFromDehydrated(dehydrated);
         mapping.set(dehydrated, emptyHydrated);
         return emptyHydrated;
       }
     });
-    // typed arrays cannot be constructed as empty and filled in later, they need their underlying buffer at construction time, which we only have access to after the first pass
-    todoTypedArrays.forEach(function (index, dehydrated) {
-      const buffer = refs[dehydrated.source[0]];
-      const constructor = typedArrayTypes.get(dehydrated.type);
-      const typedArray = new constructor(buffer);
+    // bufferables cannot be constructed as empty and filled in later, they need their underlying buffer at construction time, which we only have access to after the first pass
+    todoBufferables.forEach(function (index, dehydrated) {
+      const constructor = bufferableTypes.get(dehydrated.type);
+      const buffer = refs[dehydrated.source.buffer[0]];
+      const byteOffset = dehydrated.source.byteOffset;
+      const length = dehydrated.source.length;
+      const bufferable = new constructor(buffer, byteOffset, length);
       // attach properly typed reference at that index
-      refs[index] = typedArray;
+      refs[index] = bufferable;
       // include properly typed reference to be further enriched in the final hydration step
-      mapping.set(dehydrated, typedArray);
+      mapping.set(dehydrated, bufferable);
     });
     // final pass, imbue each empty (but properly typed) object with all its glorious details
     mapping.forEach(function (emptyHydrated, dehydrated) {
