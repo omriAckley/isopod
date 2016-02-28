@@ -123,19 +123,6 @@
     return type === 'Array' || typedArrayTypes.has(type);
   }
 
-  // function getTypedArrayBuffer (typedArray) {
-  //   // in case a typed array has a non-standard prototype
-  //   const currentProto = Object.getPrototypeOf(typedArray);
-  //   const originalProto = bufferableTypes.get(isopodTypeOf(typedArray)).prototype;
-  //   // temporarily change prototype back to original
-  //   Object.setPrototypeOf(typedArray, originalProto);
-  //   // grab buffer off of it
-  //   const buffer = typedArray.buffer;
-  //   // change back to assigned prototype
-  //   Object.setPrototypeOf(typedArray, currentProto);
-  //   return buffer;
-  // }
-
   function bufferableSource (bufferable) {
     // in case a bufferable has a non-standard prototype
     const currentProto = Object.getPrototypeOf(bufferable);
