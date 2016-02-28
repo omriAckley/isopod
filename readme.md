@@ -54,7 +54,7 @@ With `isopod` you can remotely clone:
 
 * Plain objects, arrays, strings, numbers, booleans, and null (these are no different than what you can do *without* `isopod`)
 * `undefined`, ±`Infinity`, and `NaN`
-* Functions
+* Functions (but not their closures)
 * Regular expressions
 * Errors
 * Dates
