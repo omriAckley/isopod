@@ -15,7 +15,7 @@ const globallyAccessible = (function () {
     const obj = queue.shift();
     if (all.has(obj) || obj === require('chai')) continue;
     all.add(obj);
-    for (let propertyName of [...Object.getOwnPropertyNames(obj), '__proto__']) {
+    for (let propertyName of Object.getOwnPropertyNames(obj).concat(['__proto__'])) {
       let child;
       try {child = obj[propertyName];}
       catch (e) {continue;}
