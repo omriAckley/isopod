@@ -108,6 +108,12 @@ describe('cloning across transport', function () {
       expect(remoteClone).to.be.deeplyEquivalent(original);
     });
 
+    it('includes dates', function () {
+      const original = new Date();
+      const remoteClone = simulateTransportCloning(original);
+      expect(remoteClone).to.be.deeplyEquivalent(original);
+    });
+
     it('includes symbols', function () {
       const original = Symbol('fluff');
       const remoteClone = simulateTransportCloning(original);
@@ -144,12 +150,12 @@ describe('cloning across transport', function () {
 
     it('includes arbitrary combinations of the above', function () {
       const original = {
-        a: [{b: 'do'}, 're', new Map([['beep', [10,20,30]], [[Symbol('foo'), 'baz'], 'boop']])],
+        a: [{b: 'do', 1: new Date()}, 're', new Map([['beep', [10,20,30]], [[Symbol('foo'), 'baz'], 'boop']])],
         b: function (x) {return x + 100},
         c: /^http:\/\/.*/g,
         d: Symbol('words'),
         e: 'me',
-        f: new Set([Symbol('things'), ['fa', new Set([{x: 'y'}]), 1], 'so', 2]),
+        f: new Set([Symbol('things'), ['fa', new Set([{x: 'y'}]), 1], 'so', 2, new Error('BAM!')]),
         g: new Map([[{la: 3}, {te: /[aeio]+/i}], [new Set(['and', 'but', 'of']), 4]]),
         h: [null, Infinity, undefined, NaN, -Infinity],
         i: new ArrayBuffer(3),
@@ -229,10 +235,11 @@ describe('cloning across transport', function () {
         l: {},
         m: [],
         n: function () {},
-        o: new Set(),
-        p: new Map(),
-        q: new ArrayBuffer(),
-        r: new Uint8Array()
+        o: new Date(),
+        p: new Set(),
+        q: new Map(),
+        r: new ArrayBuffer(),
+        s: new Uint8Array()
       };
     })
 
@@ -259,6 +266,13 @@ describe('cloning across transport', function () {
 
     it('includes errors', function () {
       const original = new Error();
+      Object.assign(original, keys);
+      const remoteClone = simulateTransportCloning(original);
+      expect(remoteClone).to.be.deeplyEquivalent(original);
+    });
+
+    it('includes dates', function () {
+      const original = new Date();
       Object.assign(original, keys);
       const remoteClone = simulateTransportCloning(original);
       expect(remoteClone).to.be.deeplyEquivalent(original);
@@ -319,8 +333,9 @@ describe('cloning across transport', function () {
         n: Infinity,
         o: -Infinity,
         p: new Error('boo'),
-        q: new ArrayBuffer(1),
-        r: new Uint8Array([9,8,7])
+        q: new Date(),
+        r: new ArrayBuffer(1),
+        s: new Uint8Array([9,8,7])
       };
     });
 
@@ -353,6 +368,13 @@ describe('cloning across transport', function () {
 
     it('includes errors', function () {
       const original = new Error();
+      Object.setPrototypeOf(original, otherProto);
+      const remoteClone = simulateTransportCloning(original);
+      expect(remoteClone).to.be.deeplyEquivalent(original);
+    });
+
+    it('includes dates', function () {
+      const original = new Date();
       Object.setPrototypeOf(original, otherProto);
       const remoteClone = simulateTransportCloning(original);
       expect(remoteClone).to.be.deeplyEquivalent(original);

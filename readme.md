@@ -57,6 +57,7 @@ With `isopod` you can remotely clone:
 * Functions
 * Regular expressions
 * Errors
+* Dates
 * Symbols
 * Sets
 * Maps
@@ -66,7 +67,6 @@ With `isopod` you can remotely clone:
 
 Note that cloning will exclude non-enumerable properties (except for the `.constructor` property—this in order to clone prototypes effectively). Here's a not-necessarily complete list of what you might not *yet* be able to clone:
 
-* Dates
 * Promises
 * Generators
 * Proxies

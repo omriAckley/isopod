@@ -1,6 +1,6 @@
 (function () {
 
-  // TODO: serialzation/deserialization for: Date, Promise, Generator, Proxy, DataView
+  // TODO: serialzation/deserialization for: Promise, Generator, Proxy, DataView
   // TODO: working with native functions (e.g. setTimeout)
 
   'use strict';
@@ -63,7 +63,8 @@
     Map,
     RegExp,
     Error,
-    ArrayBuffer
+    ArrayBuffer,
+    Date
   ]);
   typedArrayConstructors.forEach(function (constructor) {
     nativeConstructors.add(constructor);
@@ -183,6 +184,7 @@
         }
         // an array buffer's source is its Uint8Array representation
         case 'ArrayBuffer': return Array.prototype.slice.call(new Uint8Array(original));
+        case 'Date': return Date.prototype.valueOf.call(original);
       }
     }
 
@@ -270,6 +272,7 @@
       case 'Infinity': return Infinity;
       case '-Infinity': return -Infinity;
       case 'ArrayBuffer': return new Uint8Array(dehydrated.source).buffer;
+      case 'Date': return new Date(dehydrated.source);
     }
   }
 

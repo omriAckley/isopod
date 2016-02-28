@@ -17,6 +17,7 @@ const nativeConstructors = new Set([
   Map,
   RegExp,
   Error,
+  Date,
   ArrayBuffer,
   Int8Array,
   Uint8Array,
