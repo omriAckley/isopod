@@ -155,6 +155,12 @@ describe('cloning across transport', function () {
       expect(remoteClone).to.be.deeplyEquivalent(original);
     });
 
+    it('includes host globals', function () {
+      const original = setTimeout;
+      const remoteClone = simulateTransportCloning(original);
+      expect(remoteClone).to.be.deeplyEquivalent(original);
+    });
+
     it('includes arbitrary combinations of the above', function () {
       const original = {
         a: [{b: 'do', 1: new Date()}, 're', new Map([['beep', [10,20,30]], [[Symbol('foo'), 'baz'], 'boop']])],
@@ -171,7 +177,8 @@ describe('cloning across transport', function () {
             const instance = new typedArrayConstructor(1);
             instance[0] = 123456;
             return instance;
-          })
+          }),
+        k: setTimeout
       };
       const remoteClone = simulateTransportCloning(original);
       expect(remoteClone).to.be.deeplyEquivalent(original);
@@ -247,7 +254,8 @@ describe('cloning across transport', function () {
         q: new Map(),
         r: new ArrayBuffer(),
         s: new Uint8Array(),
-        t: new DataView(new ArrayBuffer())
+        t: new DataView(new ArrayBuffer()),
+        u: setTimeout
       };
     })
 
@@ -352,7 +360,8 @@ describe('cloning across transport', function () {
         q: new Date(),
         r: new ArrayBuffer(1),
         s: new Uint8Array([9,8,7]),
-        t: new DataView(new ArrayBuffer(2))
+        t: new DataView(new ArrayBuffer(2)),
+        u: setTimeout
       };
     });
 

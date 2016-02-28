@@ -4,48 +4,35 @@
 
 const expect = require('chai').expect;
 
-function isPrimitive (thing) {
-  return !(thing instanceof Object) && typeof thing !== 'symbol';
+function isRef (thing) {
+  return typeof thing === 'symbol' || typeof thing === 'function' || typeof thing === 'object' && thing !== null;
 }
 
-const nativeConstructors = new Set([
-  Object,
-  Function,
-  Set,
-  Symbol,
-  Array,
-  Map,
-  RegExp,
-  Error,
-  Date,
-  ArrayBuffer,
-  Int8Array,
-  Uint8Array,
-  Uint8ClampedArray,
-  Int16Array,
-  Uint16Array,
-  Int32Array,
-  Uint32Array,
-  Float32Array,
-  Float64Array,
-  DataView
-]);
-const nativePrototypes = new Set();
-nativeConstructors.forEach(function (constructor) {
-  nativePrototypes.add(constructor.prototype);
-});
-
-function isNative (thing) {
-  return nativeConstructors.has(thing) || nativePrototypes.has(thing);
-}
+const globallyAccessible = (function () {
+  const all = new Set();
+  const queue = [global];
+  while (queue.length) {
+    const obj = queue.shift();
+    if (all.has(obj) || obj === require('chai')) continue;
+    all.add(obj);
+    for (let propertyName of [...Object.getOwnPropertyNames(obj), '__proto__']) {
+      let child;
+      try {child = obj[propertyName];}
+      catch (e) {continue;}
+      if (!isRef(child)) continue;
+      queue.push(child);
+    }
+  }
+  return all;
+})();
 
 function baseTypeOf (thing) {
   return Object.prototype.toString.call(thing).slice(8,-1);
 }
 
 function areDeeplyEquivalentOnly (actual, expected, seen) {
-  if (isPrimitive(actual) || isPrimitive(expected)) return Object.is(actual, expected);
-  if (isNative(actual) || isNative(expected)) return actual === expected;
+  if (!isRef(actual) || !isRef(expected)) return Object.is(actual, expected);
+  if (globallyAccessible.has(actual) || globallyAccessible.has(expected)) return actual === expected;
   if (actual === expected) return false;
   seen = seen || new Map();
   if (seen.has(actual)) {

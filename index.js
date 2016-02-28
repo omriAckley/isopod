@@ -1,7 +1,6 @@
 (function () {
 
   // TODO: serialzation/deserialization for: Promise, Generator, Proxy
-  // TODO: working with native functions (e.g. setTimeout)
 
   'use strict';
 
@@ -22,10 +21,6 @@
     if (r.flags) return r.flags;
     return (r.ignoreCase ? 'i' : '') + (r.multiline ? 'm' : '') + (r.global ? 'g' : '') + (r.sticky ? 'y' : '');
   }
-
-  // -------------------
-  // -- SERIALIZATION --
-  // -------------------
 
   const typedArrayConstructors = new Set([
     Int8Array,
@@ -94,14 +89,15 @@
   specialTypes.forEach(function (specialType) {
     allowedTypes.add(`${specialType}`);
   });
+  allowedTypes.add('HostGlobal');
 
   function baseTypeOf (thing) {
     return Object.prototype.toString.call(thing).slice(8,-1);
   }
 
   function isopodTypeOf (thing) {
-    const type = specialTypes.has(thing) ? `${thing}` : baseTypeOf(thing);
-    return allowedTypes.has(type) ? type : 'Unsupported'; // TODO: consider throwing error for unsupported types
+    const type = specialTypes.has(thing) ? `${thing}` : hostGlobals.has(thing) ? 'HostGlobal' : baseTypeOf(thing);
+    return allowedTypes.has(type) ? type : `Unsupported:${type}`; // TODO: consider throwing error for unsupported types
   }
 
   const parensPattern = /\(.+\)/;
@@ -118,10 +114,52 @@
     return thing instanceof Object || typeof thing === 'symbol' || specialTypes.has(thing); 
   }
 
+  function isRefable (thing) {
+    return typeof thing === 'symbol' || typeof thing === 'function' || typeof thing === 'object' && thing !== null;
+  }
+
   function isPlainOrTypedArray (thing) {
     const type = baseTypeOf(thing);
     return type === 'Array' || typedArrayTypes.has(type);
   }
+
+  const hostGlobals = (function () {
+    const globallyAccessible = new Map();
+    const queue = [{
+      value: globalObject,
+      path: []
+    }];
+    while (queue.length) {
+      const item = queue.shift();
+      const obj = item.value;
+      const path = item.path;
+      if (globallyAccessible.has(obj)) continue;
+      globallyAccessible.set(obj, path);
+      for (let propertyName of [...Object.getOwnPropertyNames(obj), '__proto__']) {
+        let child;
+        try {child = obj[propertyName];}
+        catch (e) {continue;}
+        if (!isRefable(child)) continue;
+        queue.push({
+          value: child,
+          path: [...path, propertyName]
+        });
+      }
+    }
+    return globallyAccessible;
+  })();
+
+  function hostObjFromPath (path) {
+    try {
+      return path.reduce(function (obj, key) {
+        return obj[key];
+      }, globalObject);
+    } catch (e) {}
+  }
+
+  // -------------------
+  // -- SERIALIZATION --
+  // -------------------
 
   function bufferableSource (bufferable) {
     // in case a bufferable has a non-standard prototype
@@ -203,13 +241,14 @@
         // an array buffer's source is its Uint8Array representation
         case 'ArrayBuffer': return Array.prototype.slice.call(new Uint8Array(original));
         case 'Date': return Date.prototype.valueOf.call(original);
+        case 'HostGlobal': return hostGlobals.get(original);
       }
     }
 
     // return any keys in the original not accounted for in the source
     function cloneKeys (original, source) {
-      // special values do not have keys
-      if (specialTypes.has(original)) return;
+      // special values do not have keys, host globals don't need 'em
+      if (specialTypes.has(original) || hostGlobals.has(original)) return;
       const clone = {};
       const proto = Object.getPrototypeOf(original);
       // include original's __proto__ when cloning it, if it's non-native
@@ -291,13 +330,14 @@
       case '-Infinity': return -Infinity;
       case 'ArrayBuffer': return new Uint8Array(dehydrated.source).buffer;
       case 'Date': return new Date(dehydrated.source);
+      case 'HostGlobal': return hostObjFromPath(dehydrated.source);
     }
   }
 
   // use the dehydrated format to populate an empty object of the correct type
   function hydrateOne (hydrated, dehydrated, refs) {
-    // special values need no further hydration
-    if (specialTypes.has(hydrated)) return;
+    // special values and host globals need no further hydration
+    if (specialTypes.has(hydrated) || hostGlobals.has(hydrated)) return;
     // account for any objects that are duplicate references
     function possibleRef (v) {
       return Array.isArray(v) ? refs[v[0]] : v;
