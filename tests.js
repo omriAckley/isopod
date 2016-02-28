@@ -126,6 +126,12 @@ describe('cloning across transport', function () {
       expect(remoteClone).to.be.deeplyEquivalent(original);
     });
 
+    it('includes array buffers', function () {
+      const original = new ArrayBuffer(5);
+      const remoteClone = simulateTransportCloning(original);
+      expect(remoteClone).to.be.deeplyEquivalent(original);
+    });
+
     it('includes typed arrays', function () {
       [Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array, Float32Array, Float64Array]
       .forEach(function (typedArrayConstructor) {
@@ -146,7 +152,8 @@ describe('cloning across transport', function () {
         f: new Set([Symbol('things'), ['fa', new Set([{x: 'y'}]), 1], 'so', 2]),
         g: new Map([[{la: 3}, {te: /[aeio]+/i}], [new Set(['and', 'but', 'of']), 4]]),
         h: [null, Infinity, undefined, NaN, -Infinity],
-        i: [Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array, Float32Array, Float64Array]
+        i: new ArrayBuffer(3),
+        j: [Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array, Float32Array, Float64Array]
           .map(function (typedArrayConstructor) {
             const instance = new typedArrayConstructor(1);
             instance[0] = 123456;
@@ -224,7 +231,8 @@ describe('cloning across transport', function () {
         n: function () {},
         o: new Set(),
         p: new Map(),
-        q: new Uint8Array()
+        q: new ArrayBuffer(),
+        r: new Uint8Array()
       };
     })
 
@@ -270,6 +278,13 @@ describe('cloning across transport', function () {
       expect(remoteClone).to.be.deeplyEquivalent(original);
     });
 
+    it('includes array buffers', function () {
+      const original = new ArrayBuffer();
+      Object.assign(original, keys);
+      const remoteClone = simulateTransportCloning(original);
+      expect(remoteClone).to.be.deeplyEquivalent(original);
+    });
+
     it('includes typed arrays', function () {
       [Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array, Float32Array, Float64Array]
       .forEach(function (typedArrayConstructor) {
@@ -304,7 +319,8 @@ describe('cloning across transport', function () {
         n: Infinity,
         o: -Infinity,
         p: new Error('boo'),
-        q: new Uint8Array([9,8,7])
+        q: new ArrayBuffer(1),
+        r: new Uint8Array([9,8,7])
       };
     });
 
@@ -351,6 +367,13 @@ describe('cloning across transport', function () {
 
     it('includes maps', function () {
       const original = new Map();
+      Object.setPrototypeOf(original, otherProto);
+      const remoteClone = simulateTransportCloning(original);
+      expect(remoteClone).to.be.deeplyEquivalent(original);
+    });
+
+    it('includes array buffers', function () {
+      const original = new ArrayBuffer();
       Object.setPrototypeOf(original, otherProto);
       const remoteClone = simulateTransportCloning(original);
       expect(remoteClone).to.be.deeplyEquivalent(original);
