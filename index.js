@@ -109,12 +109,11 @@
     return Object.prototype.hasOwnProperty.call(obj, 'constructor') && !nativeConstructors.has(obj.constructor);
   }
 
-  // TODO: better name
-  function isRef (thing) {
-    return thing instanceof Object || typeof thing === 'symbol' || specialTypes.has(thing); 
+  function isSimple (thing) {
+    return !specialTypes.has(thing) && !isRef(thing); 
   }
 
-  function isRefable (thing) {
+  function isRef (thing) {
     return typeof thing === 'symbol' || typeof thing === 'function' || typeof thing === 'object' && thing !== null;
   }
 
@@ -139,7 +138,7 @@
         let child;
         try {child = obj[propertyName];}
         catch (e) {continue;}
-        if (!isRefable(child)) continue;
+        if (!isRef(child)) continue;
         queue.push({
           value: child,
           path: path.concat([propertyName])
@@ -182,7 +181,7 @@
   exports.serialize = function (root) {
 
     // deal with trivial case
-    if (!isRef(root)) return root;
+    if (isSimple(root)) return root;
 
     // the serialized result will be an array of "dehydrated" objects
     const serialized = [];
@@ -276,8 +275,8 @@
 
     // convert something into a rehydratable format
     function dehydrate (thing) {
-      // non-refs (i.e. something that is neither a symbol, an object, nor a special value) remain themselves
-      if (!isRef(thing)) return thing;
+      // simple values (non-special booleans, numbers, and strings) remain themselves
+      if (isSimple(thing)) return thing;
       if (!idCache.has(thing)) {
         // incorporate the object into the cache
         const dehydrated = assoc(thing);
