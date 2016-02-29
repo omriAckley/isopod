@@ -8,7 +8,8 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha --reporter spec tests.js",
-    "coverage": "istanbul cover --config=istanbul.json _mocha -- --reporter min tests.js && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage"
+    "coverage": "istanbul cover --config=istanbul.json _mocha -- --reporter min tests.js && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
+    "postversion": "npm run coverage"
   },
   "author": "Omri Bernstein",
   "license": "ISC",
