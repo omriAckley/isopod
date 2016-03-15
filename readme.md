@@ -86,17 +86,17 @@ For example, you might have an [express](http://expressjs.com/) route handler on
 ...
 // an example of some data that is sufficiently complex
 function Thing (names) {
-	this.self = this;
-	this.names = new Set(names);
+  this.self = this;
+  this.names = new Set(names);
 }
 Thing.prototype.jump = function () {
-	this.state = 'jumping';
+  this.state = 'jumping';
 };
 const thing = new Thing(['robert', 'bob', 'rob']);
 ...
 app.get('/thing', function (req, res, next) {
-	const serialized = isopod.serialize(thing);
-	res.json(serialized);
+  const serialized = isopod.serialize(thing);
+  res.json(serialized);
 });
 ...
 ```
@@ -107,15 +107,15 @@ And an AJAX request on your client that looks like:
 ...
 fetch('/thing')
 .then(function (response) {
-	return response.json();
+  return response.json();
 })
 .then(function (jsonObj) {
-	const deserialized = isopod.deserialize(jsonObj);
-	// should now be able to do the following
-	deserialized.names.has('bob'); // => true
-	deserialized.jump();
-	console.log(deserialized.state); // 'jumping'
-	console.log(deserialized.self === deserialized); // true
+  const deserialized = isopod.deserialize(jsonObj);
+  // should now be able to do the following
+  deserialized.names.has('bob'); // => true
+  deserialized.jump();
+  console.log(deserialized.state); // 'jumping'
+  console.log(deserialized.self === deserialized); // true
 });
 ...
 ```
@@ -127,6 +127,7 @@ For something more concrete, you can find runnable examples in the examples fold
 * [serialize-javascript](https://www.npmjs.com/package/serialize-javascript)
 * [serialijse](https://www.npmjs.com/package/serialijse)
 * [node-serialize](https://www.npmjs.com/package/node-serialize)
+* [lave](https://www.npmjs.com/package/lave)
 * [picklejs](https://www.npmjs.com/package/picklejs)
 * [serialization](https://www.npmjs.com/package/serialization)
 * [unserializable](https://www.npmjs.com/package/unserializable)
