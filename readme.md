@@ -50,11 +50,13 @@ This means that Javascript objects get converted into JSON strings, which are on
 
 `isopod.serialize` converts anything more complex than that into a plain object so that it can be stringified. Importantly this plain, "dehydrated", object still contains all the information necessary to reconstruct the details of the original. As such, when parsed on the other end, we should get a clone of the dehydrated object. `isopod.deserialize` can "rehydrate" this into a clone of the original.
 
+Any change that occurs to the cloned object **will not** affect the original and vice-versa. Those objects exist in different runtimes and cannot directly affect each other. If you want automated synchronization, `isopod` is not that, though you could build something like that "on top" of it.
+
 With `isopod` you can remotely clone:
 
 * Plain objects, arrays, strings, numbers, booleans, and null (these are no different than what you can do *without* `isopod`)
 * `undefined`, ±`Infinity`, and `NaN`
-* Functions (but not their closures)
+* Functions (but not [closures](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures), nor [bound](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind) functions)
 * Regular expressions
 * Errors
 * Dates
@@ -67,12 +69,11 @@ With `isopod` you can remotely clone:
 
 Note that cloning will exclude non-enumerable properties (except for the `.constructor` property—this in order to clone prototypes effectively). Here's a not-necessarily complete list of what you might not *yet* be able to clone:
 
-* Promises
+* Promises¹
 * Generators
 * Proxies
-* [Bound](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind) functions
 
-Any change that occurs to the cloned object **will not** affect the original and vice-versa. Those objects exist in different runtimes and cannot directly affect each other. If you want automatic synchronization, `isopod` is not that, though you could build something like that "on top" of it.
+¹ The plan is never to support cloning promises—it involves cloning too much hairy state for a non-obvious use case. If you're looking to resolve any values on an object, you could do so and then pass the result to `isopod.serialize`. Check out [bluebird's `Promise.props`](http://bluebirdjs.com/docs/api/promise.props.html) or even [promise-resolve-deep](https://www.npmjs.com/package/promise-resolve-deep) for help resolving inside an object.
 
 # How would I use it?
 
