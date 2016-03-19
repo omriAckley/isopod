@@ -10,7 +10,7 @@
     "test": "mocha --reporter spec tests.js",
     "coverage": "istanbul cover --config=istanbul.json _mocha -- --reporter min tests.js && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
     "preversion": "npm run version-ready",
-    "postverions": "git push && npm publish ./",
+    "postversion": "git push && npm publish ./",
     "postpublish": "npm run coverage",
     "version-ready": "(npm test && npm run push-ready) || (printf '\\e[31m×\\e[0mAddress above issues before bumping version' && echo && exit 1)",
     "push-ready": "git remote update && git merge-base --is-ancestor @{u} @ || (printf '\\e[31m×\\e[0m Local is behind origin (pull/fetch to synchronize before pushing)' && echo && exit 1) && printf '\\e[32m✓\\e[0m Local is at or ahead of origin (push away)' && echo"
