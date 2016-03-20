@@ -9,7 +9,7 @@ npm install
 ...then once that is done, run:
 
 ```bash
-node server.js
+npm start
 ```
 
 Now in a web browser you should be able to visit http://localhost:3000 and see this example in action.
