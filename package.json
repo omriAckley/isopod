@@ -10,7 +10,7 @@
     "test": "mocha --reporter spec tests.js",
     "coverage": "istanbul cover --config=istanbul.json _mocha -- --reporter min tests.js && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
     "preversion": "bash ./scripts/version-ready.sh",
-    "postversion": "git push origin --tags && npm publish ./",
+    "postversion": "git push origin master --tags && npm publish ./",
     "postpublish": "npm run coverage",
     "build": "webpack"
   },
