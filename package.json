@@ -5,13 +5,14 @@
   "engines": {
     "node": ">=4.0.0"
   },
-  "main": "index.js",
+  "main": "dist/isopod.js",
   "scripts": {
     "test": "mocha --reporter spec tests.js",
     "coverage": "istanbul cover --config=istanbul.json _mocha -- --reporter min tests.js && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
     "preversion": "bash ./scripts/version-ready.sh",
     "postversion": "git push origin --tags && npm publish ./",
-    "postpublish": "npm run coverage"
+    "postpublish": "npm run coverage",
+    "build": "webpack"
   },
   "author": "Omri Bernstein",
   "license": "ISC",
@@ -32,6 +33,7 @@
     "chai": "^3.5.0",
     "coveralls": "^2.11.6",
     "istanbul": "^0.4.2",
-    "mocha": "^2.4.5"
+    "mocha": "^2.4.5",
+    "webpack": "^1.12.14"
   }
 }

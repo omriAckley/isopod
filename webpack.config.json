@@ -1,0 +1,10 @@
+{
+  "entry": "./src/isopod.js",
+  "output": {
+    "filename": "isopod.js",
+    "path": "./dist",
+    "libraryTarget": "umd",
+    "library": "isopod",
+    "umdNamedDefine": true
+  }
+}
