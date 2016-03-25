@@ -31,7 +31,7 @@ npm install isopod
 ...and then you might put this in your html (assuming the `node_modules` directory is statically served to the client):
 
 ```html
-<script src="/isopod/index.js"></script>
+<script src="/isopod/dist/isopod.min.js"></script>
 ```
 
 ...and now `isopod` would be a global variable available to any subsequent client scripts.

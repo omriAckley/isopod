@@ -1,7 +1,16 @@
 {
   "entry": "./src/isopod.js",
+  "devtool": "source-map",
+  "module": {
+    "loaders": [{
+      "loader": "babel",
+      "query": {
+        "presets": "es2015"
+      }
+    }]
+  },
   "output": {
-    "filename": "isopod.js",
+    "filename": "isopod.min.js",
     "path": "./dist",
     "libraryTarget": "umd",
     "library": "isopod",
