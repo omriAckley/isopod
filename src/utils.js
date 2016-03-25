@@ -111,12 +111,10 @@ function isPlainOrTypedArray (thing) {
   return type === 'Array' || typedArrayTypes.has(type);
 }
 
-const globalObject = (typeof global === 'object') ? global : window;
-
 const hostGlobals = (function () {
   const globallyAccessible = new Map();
   const queue = [{
-    value: globalObject,
+    value: global,
     path: []
   }];
   while (queue.length) {
@@ -143,7 +141,7 @@ function hostObjFromPath (path) {
   try {
     return path.reduce(function (obj, key) {
       return obj[key];
-    }, globalObject);
+    }, global);
   } catch (e) {}
 }
 
