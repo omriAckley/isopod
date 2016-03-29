@@ -16,7 +16,7 @@
     "build": "webpack -p"
   },
   "author": "Omri Bernstein",
-  "license": "ISC",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/omriBernstein/isopod"
