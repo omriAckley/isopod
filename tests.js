@@ -1,6 +1,6 @@
 'use strict';
 
-const isopod = require('./src/isopod');
+const isopod = require('.');
 const chai = require('chai');
 const expect = chai.expect;
 const areDeeplyEquivalentOnly = require('./tests-utility');

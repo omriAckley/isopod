@@ -5,7 +5,7 @@
   "engines": {
     "node": ">=4.0.0"
   },
-  "main": "dist/isopod.min.js",
+  "main": "src/isopod.js",
   "scripts": {
     "test": "mocha --reporter spec tests.js",
     "coverage:local": "istanbul cover --config=istanbul.json _mocha -- --reporter min tests.js && rm -rf ./coverage",
