@@ -1,12 +1,14 @@
 'use strict';
 
+const farse = require('farse');
+
 const utils = require('./utils');
 
 // convert a dehydrated object back into something of the correct type
 function typedFromDehydrated (dehydrated) {
   switch (dehydrated.type) {
     case 'Symbol': return Symbol(dehydrated.source);
-    case 'Function': return eval(`(${dehydrated.source})`); // TODO: alternative to eval
+    case 'Function': return farse.inverse.inexact(dehydrated.source);
     case 'Set': return new Set();
     case 'Map': return new Map();
     case 'Array': return [];

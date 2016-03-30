@@ -1,5 +1,7 @@
 'use strict';
 
+const farse = require('farse');
+
 const utils = require('./utils');
 
 function bufferableSource (bufferable) {
@@ -52,8 +54,8 @@ function serialize (root) {
     switch (type) {
       // a symbol's source is the string used to construct it
       case 'Symbol': return utils.getSymbolString(original);
-      // a function's source is its source string
-      case 'Function': return Function.prototype.toString.call(original);
+      // a function's source is its `farse`d result
+      case 'Function': return farse(original);
       case 'RegExp': return [original.source, utils.flags(original)];
       case 'Error': {
         return {
