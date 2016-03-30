@@ -2,6 +2,8 @@
 
 // TODO: move this into its own standalone module (and test it)
 
+const farse = require('farse');
+
 const expect = require('chai').expect;
 
 function isRef (thing) {
@@ -28,6 +30,22 @@ const globallyAccessible = (function () {
 
 function baseTypeOf (thing) {
   return Object.prototype.toString.call(thing).slice(8,-1);
+}
+
+const commentPattern = /\/\*[\s\S]*\*\/|\/\/[\s\S]*(?:\n|$)/gm;
+const multispacePattern = /\s+/gm;
+function cleanCode (codeStr) {
+  return codeStr
+  .replace(commentPattern, '')
+  .replace(multispacePattern, ' ')
+  .trim();
+}
+
+function areEquivalentFunctions (fnA, fnB) {
+  const parsedA = farse(fnA);
+  const parsedB = farse(fnB);
+  return cleanCode(parsedA.body) === cleanCode(parsedB.body) &&
+  areDeeplyEquivalentOnly(parsedA.params.map(cleanCode), parsedB.params.map(cleanCode));
 }
 
 function areDeeplyEquivalentOnly (actual, expected, seen) {
@@ -57,7 +75,7 @@ function areDeeplyEquivalentOnly (actual, expected, seen) {
   if (aType === 'Symbol') {
     return Symbol.prototype.toString.call(actual) === Symbol.prototype.toString.call(expected);
   } else if (aType === 'Function') {
-    return Function.prototype.toString.call(actual) === Function.prototype.toString.call(expected);
+    return areEquivalentFunctions(actual, expected);
   } else if (aType === 'Error') {
     return actual.message === expected.message;
   } else if (aType === 'Set') {
