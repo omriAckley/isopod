@@ -46,13 +46,13 @@ class Greeter {
     private myName: string
   ) {}
 
-  function hello(name: string): void {
-    console.log(`${myName} says: Hello ${name}`);
+  greet(name: string): void {
+    console.log(`${this.myName} says: Hello ${name}`);
   }
 }
 
 let greeter = new Greeter('Spock');
-greeter.hello('Scotty');
+greeter.greet('Scotty');
 
 // serialize
 let greeterSer: any = isopod.serialize(greeter);
@@ -62,7 +62,7 @@ let greeterJson: string = JSON.stringify(greeterSer);
 let greeter1Ser: any = JSON.parse(greeterJson);
 let greeter1: Greeter = isopod.deserialize<Greeter>(greeter1Ser);
 
-greeter1.hello('Jean-Luc');
+greeter1.greet('Jean-Luc');
 ``` 
 
 Compile with:
