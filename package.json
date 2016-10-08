@@ -42,5 +42,6 @@
   },
   "dependencies": {
     "farse": "^0.2.1"
-  }
+  },
+  "types": "src/isopod.d.ts"
 }
